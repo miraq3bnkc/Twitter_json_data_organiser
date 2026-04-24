@@ -62,12 +62,19 @@ If the link belongs to a Greek domain, the tweet is preserved.
 
 ---
 
-### 3. Manual Review of Uncertain Cases
+### 3. Tweets with no useful context
+
+Some tweets that contain only a URL without text, may also have no additional context from the `url` or the `expanded_ul` making the tweet irrelevant. These kinds of tweets are disregarded. In this category posts with only a photo or video are included, but since we do not make a multi-modal analysis they are deleted. 
+
+---
+
+### 4. Manual Review of Uncertain Cases
 
 If a tweet:
 
 * does not contain Greek characters
 * does not link to a `.gr` domain
+* but `url` or `expanded_url` are not empty
 
 the script **prompts the user for manual confirmation** before deletion.
 
@@ -90,8 +97,8 @@ Referenced URL: ...
 Delete this tweet? (y/n)
 ```
 
-This step ensures that **important tweets written in Greeklish or mixed language are not mistakenly removed**.
-
+This step ensures that **tweets with Greek context are not mistakenly removed**.
+This step was firstly included for Greeklish representations, but since only one post was found with this representation, it was deemed an unnecessary check.
 ---
 
 ### Result
@@ -100,6 +107,7 @@ After applying this script:
 
 * Duplicate tweets are removed
 * Non-Greek tweets are filtered
+* Tweets with no useful context are removed
 * Ambiguous cases are manually reviewed
 
 This produces a **cleaner dataset focused on Greek-language content**, which is required for our task.
@@ -143,10 +151,7 @@ This produces a **cleaner dataset focused on Greek-language content**, which is 
     "article_title": "text"
   },
   "hashtags": ["hashtag1", "hashtag2"],
-  "media": [
-        {"type": "photo"},
-        {"type": "video"}
-  ],
+  "media": integer,
   "urls": ["expanded_url1", "expanded_url2"],
   "user_mentions": ["username1", "username2"],
   "isQuote": false,
@@ -223,12 +228,13 @@ These values are extracted from the `card` object in the raw tweet response.
 
 The `entities` object contains structured elements present in the tweet.
 
-| Field         | Description                     |
-| ------------- | ------------------------------- |
-| hashtags      | List of hashtags used           |
-| media         | Media attachments (photo/video) |
-| urls          | External links                  |
-| user_mentions | Mentioned usernames             |
+| Field         | Description                               
+|
+| ------------- | ----------------------------------------- |
+| hashtags      | List of hashtags used                     |
+| media         | number of media attachments (photo/video) |
+| urls          | External links                            |
+| user_mentions | Mentioned usernames                       |
 
 ---
 
@@ -341,17 +347,14 @@ After cleaning:
 ```json
 "entities": {
   "hashtags": ["someHashtags","someOtherHashtag"],
-  "media": [
-    {"type": "video"},
-    {"type": "photo"}
-  ],
+  "media": 2,
   "urls": ["https://example.com"],
   "user_mentions": ["someScreenName","someScreenName2"]
 }
 ```
 
 
-Only the **media type, hashtag name, urls expanded_url** and **user mentions screen_name** is preserved.
+Only the **number of media type, hashtag name, urls expanded_url** and **user mentions screen_name** is preserved.
 
 ---
 
