@@ -126,6 +126,10 @@ def extract_entities(entities, tweet):
 
     return [hashtags, media, urls, user_mentions]
 
+"""def get_text_and_id(tweet):
+    tweet_info= [tweet.get("text"), tweet.get("id")]
+    return tweet_info
+"""
 
 def clean_tweet(tweet, are_quote_data):  
     entities=extract_entities(tweet.get("entities"), tweet)
@@ -162,8 +166,20 @@ def clean_tweet(tweet, are_quote_data):
         cleaned_tweet["url"] = tweet.get("url")
 
     # quoted tweet
+    cleaned_quote={} #return empty quote if no quote was included
     if tweet.get("isQuote"):
         if "quote" in tweet:
-            cleaned_tweet["quote"] = clean_tweet(tweet["quote"], True)
+            #we only keep the text and id of the quote as context
+            cleaned_tweet["quoted_text"] = tweet.get("quote").get("text")
+            cleaned_tweet["quoted_tweet_id"] = tweet.get("quote").get("id")
+    
+            #quote_info = get_text_and_id(tweet["quote"])
 
-    return cleaned_tweet
+            #keep quote as a SEPARATE tweet
+            cleaned_quote = clean_tweet(tweet["quote"], are_quote_data=True)
+
+    if are_quote_data :
+        #basically returns only the quote data without the empty dict cleaned_quote 
+        return cleaned_tweet 
+
+    return cleaned_tweet, cleaned_quote

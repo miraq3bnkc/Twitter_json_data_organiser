@@ -113,7 +113,6 @@ This produces a **cleaner dataset focused on Greek-language content**, which is 
 ```json
 {
   "id": "post id",
-  "url": "post url",
   "text": "post text",
   "retweetCount": 0,
   "replyCount": 0,
@@ -126,7 +125,7 @@ This produces a **cleaner dataset focused on Greek-language content**, which is 
   "author": {
     "userName": "string",
     "profile_url": "url",
-    "id": "user id",
+    "user_id": "user id",
     "isBlueVerified": false,
     "description": "text",
     "followers": 22939,
