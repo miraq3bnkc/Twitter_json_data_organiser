@@ -7,8 +7,6 @@ The cleaning process removes unnecessary metadata from the raw X/Twitter respons
 ---
 # Process of Removing Irrelevant Posts (remove_posts.py)
 
-Here is a **small, clean README section** you can paste under something like **“Data Cleaning Scripts”** or **“Preprocessing”**. I kept it concise and documentation-style so it fits well in a repo.
-
 ---
 
 ## Duplicate and Language Filtering
