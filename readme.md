@@ -380,7 +380,7 @@ If `"isQuote": true`, the quoted tweet originally appears under:
 "quote": { ... }
 ```
 This object contains the **same structure as a normal tweet**.
-It was decided to separate the original tweet from the quote. So, the tweet that quotes another tweet will have the additional fetures:
+It was decided to separate the original tweet from the quote. So, the tweet that quotes another tweet will have the additional features:
 
 ```
 "quoted_text": text
