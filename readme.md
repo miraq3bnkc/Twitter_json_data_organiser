@@ -226,8 +226,7 @@ These values are extracted from the `card` object in the raw tweet response.
 
 The `entities` object contains structured elements present in the tweet.
 
-| Field         | Description                               
-|
+| Field         | Description                               |
 | ------------- | ----------------------------------------- |
 | hashtags      | List of hashtags used                     |
 | media         | number of media attachments (photo/video) |
