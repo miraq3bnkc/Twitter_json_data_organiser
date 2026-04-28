@@ -10,22 +10,7 @@
 """
 
 import json 
-
-def get_profession(professional):
-    #initialization
-    professional_category=None
-    professional_type=None
-
-    #change values only if they exist in .json 
-    if professional:
-        professional_type = professional.get("professional_type")
-        if professional.get("category"):
-             professional_category = professional["category"][0]["name"]
-
-    return [
-        professional_category,
-        professional_type  
-            ]
+from additional.professional_cluster import get_profession
 
 def get_author_entities(entities):
      description_urls=[]
