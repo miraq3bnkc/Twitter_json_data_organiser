@@ -145,12 +145,9 @@ This produces a **cleaner dataset focused on Greek-language content**, which is 
     "favouritesCount": 98,
     "mediaCount": 259429,
     "statusesCount": 414885,
-    "professional_category": "Journalist",
-    "professional_type": "Creator"
   },
   "linked_article_values": {
     "article_description": "text",
-    "article_domain": "www.example.com",
     "article_title": "text"
   },
   "hashtags": ["hashtag1", "hashtag2"],
@@ -202,8 +199,6 @@ Additional fields extracted from the raw API:
 | --------------------- | ---------------------------------------- | -------------------------------------- |
 | description_urls      | URLs found in the profile description    | entities.description.urls.expanded_url |
 | linked_urls           | External URLs listed in the profile      | entities.url.urls.expanded_url         |
-| professional_category | Professional category (e.g. Journalist)  | professional.category.name             |
-| professional_type     | Professional account type (e.g. Creator) | professional.professional_type         |
 
 ---
 
@@ -221,7 +216,6 @@ Fields include:
 | ------------------- | ---------------------------- |
 | article_title       | Title of the linked article  |
 | article_description | Article preview description  |
-| article_domain      | Domain of the linked website |
 
 These values are extracted from the `card` object in the raw tweet response.
 
