@@ -9,9 +9,6 @@
    The changes are curated for the specific analysis. 
 """
 
-import json 
-from additional.professional_cluster import get_profession
-
 def get_author_entities(entities):
      description_urls=[]
      linked_urls=[]
@@ -29,6 +26,29 @@ def get_author_entities(entities):
 
      return [description_urls, linked_urls]
 
+"""Profession Data not included after all
+These metadata were defined only on 19.5% of our dataset.
+Most of this values were user defined, so the categories were inconsistent
+Instead, a simplified binary indicator denoting the presence of professional 
+account metadata was retained.
+"""
+def get_profession(professional):
+    #initialization
+    professional_category=None
+    professional_type=None
+
+    #change values only if they exist in .json 
+    if professional:
+        professional_type = professional.get("professional_type")
+        if professional.get("category"):
+             professional_category = professional["category"][0]["name"]
+
+    #Defining and returning binary indicator 
+    if professional_category or professional_type:
+        return 1  
+    else:
+        return 0
+            
 def extract_author(author):
     profession= get_profession(author.get("professional"))
     entities= get_author_entities(author.get("entities"))
@@ -47,8 +67,7 @@ def extract_author(author):
         "favouritesCount": author.get("favouritesCount"),
         "mediaCount": author.get("mediaCount"),
         "statusesCount": author.get("statusesCount"),
-        "professional_category": profession[0],
-        "professional_type": profession[1]
+        "professional_info": profession
     }        
 
     return cleaned_author
@@ -70,9 +89,8 @@ def extract_card(card):
             elif key=="title":
                 article_title=b_value["value"]["string_value"]
 
-    return {"article_description":article_description,
-             "article_domain":article_domain, 
-             "article_title":article_title}
+    return {"article_description":article_description, 
+             "article_title":article_title}, article_domain
 
 def get_media(entities):
     media=[]
@@ -111,13 +129,34 @@ def extract_entities(entities, tweet):
 
     return [hashtags, media, urls, user_mentions]
 
-"""def get_text_and_id(tweet):
-    tweet_info= [tweet.get("text"), tweet.get("id")]
-    return tweet_info
-"""
+#Change urls to their article domain if they are linked through a redirecting link
+def transform_urls(article_domain,urls):
+    redirectors=[
+        "dlvr.it",
+        "ift.tt",
+        "ow.ly",
+        "share.google",
+        "search.app",
+        "bit.ly",
+        "disq.us",
+        "tinyurl.com"
+    ]
+    
+    for i, url in enumerate(urls):
+        for redirector in redirectors:
+            if url.find(redirector)!=-1:
+                urls[i] = article_domain
+                break
+
+    return urls
+
 
 def clean_tweet(tweet, are_quote_data):  
     entities=extract_entities(tweet.get("entities"), tweet)
+    linked_info, article_domain = extract_card(tweet.get("card"))
+
+    if article_domain:
+        entities[2]=transform_urls(article_domain,entities[2])
 
     cleaned_tweet={
         "id": tweet.get("id"),
@@ -130,7 +169,7 @@ def clean_tweet(tweet, are_quote_data):
         "createdAt": tweet.get("createdAt"),
         "bookmarkCount": tweet.get("bookmarkCount"),
         "author" : extract_author(tweet.get("author")),
-        "linked_article_values": extract_card(tweet.get("card")),
+        "linked_article_values": linked_info,
         "hashtags": entities[0],
         "media": entities[1],
         "urls": entities[2],
