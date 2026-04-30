@@ -146,10 +146,7 @@ This produces a **cleaner dataset focused on Greek-language content**, which is 
     "mediaCount": 259429,
     "statusesCount": 414885,
   },
-  "linked_article_values": {
-    "article_description": "text",
-    "article_title": "text"
-  },
+  "linked_article_values": "text",
   "hashtags": ["hashtag1", "hashtag2"],
   "media": integer,
   "urls": ["expanded_url1", "expanded_url2"],
@@ -210,14 +207,20 @@ If a tweet contains a **link preview card**, metadata is extracted and stored un
 linked_article_values
 ```
 
-Fields include:
+Specifically the string values under the specific `key` are extracted:
+(These values are exists in the `card` object in the raw tweet response.)
 
-| Field               | Description                  |
-| ------------------- | ---------------------------- |
-| article_title       | Title of the linked article  |
-| article_description | Article preview description  |
+| Key         | Description                  |
+| ----------- | ---------------------------- |
+| title       | Title of the linked article  |
+| description | Article preview description  |
 
-These values are extracted from the `card` object in the raw tweet response.
+This values are concatenated:
+
+```
+linked_article_values = title + '\n' + description
+```
+
 
 ---
 
@@ -366,6 +369,11 @@ timestamps
 ```
 
 These were consistently empty across the collected tweets.
+
+## Urls tranformation
+
+Some of the `"urls"` are redirecting links. For example "dlvr.it", "ift.tt" etc.
+In such cases, where the string value under `"key"="domain"` in `card` object of the raw tweet response is availabe, the redirecting url is replaced by the domain string.
 
 ---
 
