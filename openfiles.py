@@ -3,6 +3,7 @@ import json
 from remove_posts import de_duplicate,delete_tweets
 from remove_fields import clean_tweet
 from datetime import datetime
+from additional.data_transform import get_user_list
 
 path = r"../apify/digital_ids (Copy)" #path that includes the .json files (only) 
 
@@ -62,3 +63,5 @@ tweets_sorted = sorted(all_tweets, key=parse_date,reverse=True)
 with open("merged.json", "w", encoding="utf-8") as f:
     json.dump(tweets_sorted, f, ensure_ascii=False, indent=2)
 
+#create users list file
+get_user_list(tweets_sorted)
