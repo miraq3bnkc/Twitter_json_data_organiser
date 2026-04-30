@@ -8,6 +8,7 @@
    an Apify actor: https://apify.com/apidojo/tweet-scraper.
    The changes are curated for the specific analysis. 
 """
+from additional.data_transform import transform_mentions, transform_urls
 
 def get_author_entities(entities):
      description_urls=[]
@@ -91,7 +92,7 @@ def extract_card(card):
     
     #concatenate the title with the description of the link
     article_text=[ article_title, article_description ]
-    
+
     if article_description or article_title:
         linked_article_info = '\n'.join(filter(None,article_text))
     else:
@@ -136,28 +137,6 @@ def extract_entities(entities, tweet):
 
     return [hashtags, media, urls, user_mentions]
 
-#Change urls to their article domain if they are linked through a redirecting link
-def transform_urls(article_domain,urls):
-    redirectors=[
-        "dlvr.it",
-        "ift.tt",
-        "ow.ly",
-        "share.google",
-        "search.app",
-        "bit.ly",
-        "disq.us",
-        "tinyurl.com"
-    ]
-    
-    for i, url in enumerate(urls):
-        for redirector in redirectors:
-            if url.find(redirector)!=-1:
-                urls[i] = article_domain
-                break
-
-    return urls
-
-
 def clean_tweet(tweet, are_quote_data):  
     entities=extract_entities(tweet.get("entities"), tweet)
     linked_info, article_domain = extract_card(tweet.get("card"))
@@ -193,6 +172,9 @@ def clean_tweet(tweet, are_quote_data):
             cleaned_tweet["inReplyToId"]=tweet.get("inReplyToId")
             cleaned_tweet["inReplyToUserId"] = tweet.get("inReplyToUserId")
             cleaned_tweet["inReplyToUsername"] = tweet.get("inReplyToUsername")
+
+            #Update mentions list if needed
+            cleaned_tweet["user_mentions"]=transform_mentions(cleaned_tweet["inReplyToUsername"],cleaned_tweet["user_mentions"])
 
         cleaned_tweet["url"] = tweet.get("url")
 
