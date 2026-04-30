@@ -88,9 +88,16 @@ def extract_card(card):
                 article_domain=b_value["value"]["string_value"]
             elif key=="title":
                 article_title=b_value["value"]["string_value"]
+    
+    #concatenate the title with the description of the link
+    article_text=[ article_title, article_description ]
+    
+    if article_description or article_title:
+        linked_article_info = '\n'.join(filter(None,article_text))
+    else:
+        linked_article_info = None
 
-    return {"article_description":article_description, 
-             "article_title":article_title}, article_domain
+    return linked_article_info, article_domain
 
 def get_media(entities):
     media=[]
@@ -155,6 +162,7 @@ def clean_tweet(tweet, are_quote_data):
     entities=extract_entities(tweet.get("entities"), tweet)
     linked_info, article_domain = extract_card(tweet.get("card"))
 
+    #If article domain exists then transform urls if needed
     if article_domain:
         entities[2]=transform_urls(article_domain,entities[2])
 
