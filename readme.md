@@ -132,8 +132,6 @@ This produces a **cleaner dataset focused on Greek-language content**, which is 
   "createdAt": "Thu Mar 27 15:50:14 +0000 2025",
   "isReply": false,
   "author": {
-    "userName": "string",
-    "profile_url": "url",
     "user_id": "user id",
     "isBlueVerified": false,
     "description": "text",
@@ -150,7 +148,7 @@ This produces a **cleaner dataset focused on Greek-language content**, which is 
   "hashtags": ["hashtag1", "hashtag2"],
   "media": integer,
   "urls": ["expanded_url1", "expanded_url2"],
-  "user_mentions": ["username1", "username2"],
+  "user_mentions": ["user_id1", "user_id2"],
   "quoted_text": "text",
   "quoted_tweet_id": "id of quoted post"
 }
@@ -165,7 +163,6 @@ If `"isReply": true`, the following fields are included:
 ```
 "inReplyToId": "post id"
 "inReplyToUserId": "user id"
-"inReplyToUsername" "username string"
 ```
 
 These fields identify the **tweet and user being replied to**.
@@ -178,8 +175,6 @@ The `"author"` object contains metadata about the user that posted the tweet.
 
 | Field           | Description                     |
 | --------------- | ------------------------------- |
-| userName        | Twitter/X username              |
-| profile_url     | Profile URL                     |
 | id              | Unique user ID                  |
 | isBlueVerified  | Whether the account is verified |
 | description     | Profile biography               |
