@@ -48,7 +48,7 @@ for file in os.scandir(path):
                 if potential_quote:
                     #filter out irrelevant quotes
                     relevant_quote=delete_tweets(potential_quote)
-                    if relevant_quote: 
+                    if relevant_quote and quote_user[0]!="grok": 
                         users[quote_user[0]] = quote_user[1]
                         cleaned_quotes.append(potential_quote)
 
