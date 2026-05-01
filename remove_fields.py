@@ -55,8 +55,6 @@ def extract_author(author):
     entities= get_author_entities(author.get("entities"))
 
     cleaned_author={
-        "userName": author.get("userName"),
-        "profile_url": author.get("url"),
         "user_id": author.get("id"),
         "isBlueVerified":author.get("isBlueVerified"),
         "description": author.get("description"),
@@ -70,8 +68,11 @@ def extract_author(author):
         "statusesCount": author.get("statusesCount"),
         "professional_info": profession
     }        
+    
+    #needed for creation of user list
+    user_info=[author.get("userName"), author.get("id")]
 
-    return cleaned_author
+    return cleaned_author,user_info
 
 #Extract string values with key: description, domain or title from card/legacy/binding_values
 def extract_card(card):
@@ -140,6 +141,7 @@ def extract_entities(entities, tweet):
 def clean_tweet(tweet, are_quote_data):  
     entities=extract_entities(tweet.get("entities"), tweet)
     linked_info, article_domain = extract_card(tweet.get("card"))
+    author_element,user_info=extract_author(tweet.get("author"))
 
     #If article domain exists then transform urls if needed
     if article_domain:
@@ -155,7 +157,7 @@ def clean_tweet(tweet, are_quote_data):
         "viewCount": tweet.get("viewCount"),
         "createdAt": tweet.get("createdAt"),
         "bookmarkCount": tweet.get("bookmarkCount"),
-        "author" : extract_author(tweet.get("author")),
+        "author" : author_element,
         "linked_article_values": linked_info,
         "hashtags": entities[0],
         "media": entities[1],
@@ -179,19 +181,20 @@ def clean_tweet(tweet, are_quote_data):
 
     # quoted tweet
     cleaned_quote={} #return empty quote if no quote was included
+    quote_user=[]
     if tweet.get("isQuote"):
         if "quote" in tweet:
             #we only keep the text and id of the quote as context
             cleaned_tweet["quoted_text"] = tweet.get("quote").get("text")
             cleaned_tweet["quoted_tweet_id"] = tweet.get("quote").get("id")
     
-            #quote_info = get_text_and_id(tweet["quote"])
-
             #keep quote as a SEPARATE tweet
-            cleaned_quote = clean_tweet(tweet["quote"], are_quote_data=True)
+            cleaned_quote,quote_user = clean_tweet(tweet["quote"], are_quote_data=True)
 
     if are_quote_data :
-        #basically returns only the quote data without the empty dict cleaned_quote 
-        return cleaned_tweet 
+        #basically returns only the quote data and user_info 
+        #without the empty dict cleaned_quote and quote_user
+        #those will be filled after the return
+        return cleaned_tweet , user_info
 
-    return cleaned_tweet, cleaned_quote
+    return cleaned_tweet, user_info, cleaned_quote, quote_user

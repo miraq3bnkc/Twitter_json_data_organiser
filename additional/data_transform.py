@@ -34,46 +34,25 @@ def transform_urls(article_domain,urls):
 
     return urls
 
-def get_user_list(tweet,users):
-
-    potential_user = {
-        "id": tweet.get("author").get("user_id"),
-        "userName": tweet.get("author").get("userName") 
-    }
-
-    users.append(potential_user)
-
 def anonymize_username(username):
     return hashlib.sha256(username.encode()).hexdigest()
 
 
-irrelevant_users=[]
+irrelevant_users={}
 #Replace usernames with user ids
 def replace_username_id(user_mentions,users):
 
     for i,mention in enumerate(user_mentions):
-        found=0
-        for user in users:
-            if mention==user["userName"]:
-                user_mentions[i]=user["id"]
-                found=1
-                break  #go to the next mention
-    
-        if found==0:
+        if mention in users:
+            user_mentions[i]=users[mention]
+        else:
             #the mentioned user is not in our user list 
-            for ir_user in irrelevant_users:
-                if mention==ir_user["userName"]:
-                    user_mentions[i]=ir_user["id"]
-                    found=1
-                    break
-            
-            if found==0:
-                #if the user is not in our irrelevant list either, add them 
-                irrelevant_user={
-                    "id": anonymize_username(mention),
-                    "userName": mention
-                }
-                user_mentions[i]=irrelevant_user["id"]
-                irrelevant_users.append(irrelevant_user)
+            if mention in irrelevant_users:
+                user_mentions[i]=irrelevant_users[mention]            
+            else:
+                #if the user is not in our irrelevant list either 
+                new_id=anonymize_username(mention) # create id
+                irrelevant_users[mention]= new_id # add user to irrelevant list
+                user_mentions[i]=new_id #replace username with new id
 
     return user_mentions
