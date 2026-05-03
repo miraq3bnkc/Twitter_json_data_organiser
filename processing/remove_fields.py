@@ -8,7 +8,7 @@
    an Apify actor: https://apify.com/apidojo/tweet-scraper.
    The changes are curated for the specific analysis. 
 """
-from additional.data_transform import transform_mentions, transform_urls, remove_mention_text
+from processing.data_transform import transform_mentions, transform_urls, remove_mention_text
 
 def get_author_entities(entities):
      description_urls=[]

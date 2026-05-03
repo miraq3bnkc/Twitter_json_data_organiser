@@ -39,22 +39,26 @@ def anonymize_username(username):
 
 irrelevant_users={}
 #Replace usernames with user ids
-def replace_username_id(user_mentions,users):
-
-    for i,mention in enumerate(user_mentions):
-        if mention in users:
-            user_mentions[i]=users[mention]
-        else:
-            #the mentioned user is not in our user list 
-            if mention in irrelevant_users:
-                user_mentions[i]=irrelevant_users[mention]            
+def replace_username_id(tweets,users):
+    for j,_ in enumerate(tweets):
+        user_mentions=tweets[j]["user_mentions"]
+ 
+        for i,mention in enumerate(user_mentions):
+            if mention in users:
+                user_mentions[i]=users[mention]
             else:
-                #if the user is not in our irrelevant list either 
-                new_id=anonymize_username(mention) # create id
-                irrelevant_users[mention]= new_id # add user to irrelevant list
-                user_mentions[i]=new_id #replace username with new id
+                #the mentioned user is not in our user list 
+                if mention in irrelevant_users:
+                    user_mentions[i]=irrelevant_users[mention]            
+                else:
+                    #if the user is not in our irrelevant list either 
+                    new_id=anonymize_username(mention) # create id
+                    irrelevant_users[mention]= new_id # add user to irrelevant list
+                    user_mentions[i]=new_id #replace username with new id
 
-    return user_mentions
+        tweets[j]["user_mentions"]=user_mentions
+
+    return tweets
 
 #Remove mentions from text
 def remove_mention_text(text,user_mentions):
