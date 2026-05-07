@@ -31,9 +31,7 @@ def create_DiGraph(users,tweets):
             add_with_weight(user_node,quote,G)
     return G
 
-def plot_graph(Graph,threshold,window):
-
-
+def remove_selfloops(Graph):
     G_plot=Graph.copy()
 
     # Detect self-loop nodes before removing loops
@@ -41,6 +39,14 @@ def plot_graph(Graph,threshold,window):
 
     # Remove self-loops from drawing
     G_plot.remove_edges_from(nx.selfloop_edges(G_plot))
+
+    return G_plot,self_loop_nodes
+
+
+
+def plot_graph(Graph,threshold,window):
+
+    G_plot,self_loop_nodes=remove_selfloops(Graph)
 
     #remove isolated nodes, with degree less than threshold
     nodes_to_keep = [n for n in G_plot.nodes() if G_plot.degree(n) > threshold]
@@ -103,18 +109,39 @@ def plot_largest_strong(Graph):
 
 def get_graph_features(Graph):
     #fix: the features may need some modification
-    #fix: define a function for self_loop nodes
-    G_plot=Graph.copy()
 
-    # Detect self-loop nodes before removing loops
-    self_loop_nodes = set(u for u, v in nx.selfloop_edges(G_plot))
-
-    # Remove self-loops from drawing
-    G_plot.remove_edges_from(nx.selfloop_edges(G_plot))
+    G_plot,self_loop_nodes=remove_selfloops(Graph)
     core=nx.core_number(G_plot)
+    indegs=G_plot.in_degree()
+    outdegs=G_plot.out_degree()
+    weighted_indegs=G_plot.in_degree(weight="weight")
+    weighted_outdegs=G_plot.out_degree(weight="weight")
 
+    degrees=[indegs,outdegs,weighted_indegs,weighted_outdegs]
+
+    #for the measures below, sel-loops were included
     betweenness=nx.betweenness_centrality(Graph, normalized=False, endpoints=False)
     pagerank=nx.pagerank(Graph, alpha=0.85)
     clustering=nx.clustering(Graph)
 
-    return [betweenness,pagerank,clustering,core, self_loop_nodes]
+    return [betweenness,pagerank,clustering,core, self_loop_nodes],degrees
+
+
+def add_graph_features(G,tweet,features,degrees):
+    user_id=tweet["author"].get("user_id")
+    tweet["author"]["betweenness"]=features[0][user_id]
+    tweet["author"]["pagerank"]=features[1][user_id]
+    tweet["author"]["clustering"]=features[2][user_id]
+    tweet["author"]["core"]=features[3][user_id]
+    if user_id in features[4]:
+        tweet["author"]["has_selfloop"]=True
+        tweet["author"]["weight"] = G[user_id][user_id]["weight"] 
+    else:
+        tweet["author"]["has_selfloop"]=False
+    
+    tweet["author"]["indeg"]=degrees[0][user_id]
+    tweet["author"]["outdeg"]=degrees[1][user_id]
+    tweet["author"]["weighted_indeg"]=degrees[2][user_id]
+    tweet["author"]["weighted_outdeg"]=degrees[3][user_id]
+
+    return tweet
