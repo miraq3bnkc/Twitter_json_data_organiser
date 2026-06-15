@@ -1,7 +1,6 @@
 from graph_structure.network_graph import add_graph_features, create_DiGraph, plot_graph, get_graph_features
 from processing.openfiles import load_data,save_file,extract_transform,merge_quotes
 from processing.data_transform import replace_username_id, account_age
-import networkx as nx
 
 
 path = r"../apify/digital_ids (Copy)" #path that includes the .json files (only) 

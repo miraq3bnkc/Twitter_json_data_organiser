@@ -83,3 +83,11 @@ def remove_mention_text(text,user_mentions):
         for mention in user_mentions:
             text = text.replace(mention, "ΧΡΗΣΤΗΣ")
     return text
+
+#Remove Urls for text
+
+#specifically removing media urls
+
+def remove_media_url(text,media):
+    if media>0:
+        return 0

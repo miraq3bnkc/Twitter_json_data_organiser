@@ -10,23 +10,6 @@
 """
 from processing.data_transform import transform_mentions, transform_urls, remove_mention_text
 
-def get_author_entities(entities):
-     description_urls=[]
-     linked_urls=[]
-
-     #get description urls
-     description= entities.get("description")
-     if description.get("urls"):
-        for url in description.get("urls"):
-            description_urls.append(url.get("expanded_url"))
-
-     linked=entities.get("url")
-     if linked:
-          for url in linked.get("urls"):
-               linked_urls.append(url.get("expanded_url"))
-
-     return [description_urls, linked_urls]
-
 """Profession Data not included after all
 These metadata were defined only on 19.5% of our dataset.
 Most of this values were user defined, so the categories were inconsistent
@@ -52,7 +35,6 @@ def get_profession(professional):
             
 def extract_author(author):
     profession= get_profession(author.get("professional"))
-    entities= get_author_entities(author.get("entities"))
 
     cleaned_author={
         "user_id": author.get("id"),
@@ -60,8 +42,6 @@ def extract_author(author):
         "followers": author.get("followers"),
         "following": author.get("following"),
         "createdAt": author.get("createdAt"),
-        "description_urls": entities[0], #keep for now think later
-        "linked_urls": entities[1],
         "favouritesCount": author.get("favouritesCount"),
         "mediaCount": author.get("mediaCount"),
         "statusesCount": author.get("statusesCount"),
@@ -101,11 +81,10 @@ def extract_card(card):
     return linked_article_info, article_domain
 
 def get_media(entities):
-    media=[]
-
+    media=0
     if entities.get("media"):
-        for post_media in entities.get("media"):
-            media.append(post_media.get("type"))
+        media= len(entities.get("media"))
+    
     return media
 
 def extract_entities(entities, tweet):
@@ -121,9 +100,9 @@ def extract_entities(entities, tweet):
     #Get the number of media used in the post
     if tweet.get("extendedEntities"):
         #only quotes in tweet data have the field of extendedEntities in our dataset
-        media=len(get_media(tweet.get("extendedEntities")))
+        media=get_media(tweet.get("extendedEntities"))
     else:
-        media=len(get_media(entities))
+        media=get_media(entities)
 
     #Get the URLs in the text of the post
     if entities.get("urls"):
@@ -187,6 +166,8 @@ def clean_tweet(tweet, are_quote_data):
             cleaned_tweet["quoted_text"] = cleaned_quote.get("text")
             cleaned_tweet["quoted_tweet_id"] = tweet.get("quote").get("id")
             cleaned_tweet["quoted_user_id"] = tweet.get("quote").get("author").get("id")
+            #add in number of media of the post also the number of media from the quote
+            cleaned_tweet["media"]+=cleaned_quote.get("media")
 
     if are_quote_data :
         #basically returns only the quote data and user_info 
