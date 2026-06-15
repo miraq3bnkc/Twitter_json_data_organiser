@@ -2,6 +2,7 @@
 
 import hashlib
 from datetime import date,datetime
+import re
 
 #function for accessing the datetime string existing in "createdAt" field
 def parse_date(tweet):
@@ -84,10 +85,29 @@ def remove_mention_text(text,user_mentions):
             text = text.replace(mention, "ΧΡΗΣΤΗΣ")
     return text
 
-#Remove Urls for text
+#Remove Urls from text
 
-#specifically removing media urls
+#specifically removing media urls 
+# (which they exist at the end of the string of feature "text")
 
-def remove_media_url(text,media):
+def remove_media_url(text,media,urls):
     if media>0:
-        return 0
+        url = r"https://t\.co/\S*"
+
+        matches = list(re.finditer(url, text))
+
+        #check if urls found aren't just from external urls (from urls feature) 
+        if len(matches)>len(urls):
+            last = matches[-1] #get last occurrence
+            #check if last occurrence is at the end of text 
+            if last.end()==len(text):
+                text = text[:last.start()]
+
+    return text
+
+
+def text_cleanup(text,entities):
+    [hashtags, media, urls, mentions]=entities
+    text=remove_mention_text(text,mentions)
+    text=remove_media_url(text,media,urls)
+    return text

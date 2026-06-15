@@ -8,7 +8,7 @@
    an Apify actor: https://apify.com/apidojo/tweet-scraper.
    The changes are curated for the specific analysis. 
 """
-from processing.data_transform import transform_mentions, transform_urls, remove_mention_text
+from processing.data_transform import transform_mentions, transform_urls, text_cleanup
 
 """Profession Data not included after all
 These metadata were defined only on 19.5% of our dataset.
@@ -127,7 +127,7 @@ def clean_tweet(tweet, are_quote_data):
 
     cleaned_tweet={
         "id": tweet.get("id"),
-        "text": remove_mention_text(tweet.get("text"),entities[3]),
+        "text": text_cleanup(tweet.get("text"),entities),
         "retweetCount":tweet.get("retweetCount"),
         "replyCount": tweet.get("replyCount"),
         "likeCount": tweet.get("likeCount"),
