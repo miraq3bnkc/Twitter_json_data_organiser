@@ -88,14 +88,14 @@ def get_media(entities):
     return media
 
 def extract_entities(entities, tweet):
-    hashtags=[]
+    hashtags=0
     urls=[]
     user_mentions=[]
 
     #Get the hashtags used in text of the post 
     if entities.get("hashtags"):
         for hashtag in entities["hashtags"]:
-            hashtags.append(hashtag.get("text"))
+            hashtags=len(hashtag)
 
     #Get the number of media used in the post
     if tweet.get("extendedEntities"):
@@ -121,10 +121,12 @@ def clean_tweet(tweet, are_quote_data):
     linked_info, article_domain = extract_card(tweet.get("card"))
     author_element,user_info=extract_author(tweet.get("author"))
 
+    """UNUSED FEATURE -- WE ONLY KEPT NUMBER OF URLS
     #If article domain exists then transform urls if needed
     if article_domain:
         entities[2]=transform_urls(article_domain,entities[2])
-
+    """
+    
     cleaned_tweet={
         "id": tweet.get("id"),
         "text": text_cleanup(tweet.get("text"),entities),
@@ -139,7 +141,7 @@ def clean_tweet(tweet, are_quote_data):
         "linked_article_values": linked_info,
         "hashtags": entities[0],
         "media": entities[1],
-        "urls": entities[2],
+        "urls": len(entities[2]),
         "user_mentions": entities[3]
     }
 

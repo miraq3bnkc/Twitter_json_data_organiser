@@ -33,6 +33,9 @@ for tweet in tweets:
     #Adding graph features
     tweet=add_graph_features(G,tweet,features,degrees)
 
+    #now that graph features are added we transform user_mentions to an integer
+    tweet["user_mentions"]=len(tweet.get("user_mentions"))
+
     processed_tweets.append(tweet)
 
 

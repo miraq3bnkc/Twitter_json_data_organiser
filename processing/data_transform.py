@@ -30,6 +30,8 @@ def transform_mentions(reply_username, mentions):
     
     return new_mentions
 
+
+'''UNUSED FEATURE transform_urls --- WE ONLY KEPT NUMBER OF URLS '''
 #Change urls to their article domain if they are linked through a redirecting link
 def transform_urls(article_domain,urls):
     redirectors=[
@@ -51,6 +53,7 @@ def transform_urls(article_domain,urls):
 
     return urls
 
+    
 def anonymize_username(username):
     return hashlib.sha256(username.encode()).hexdigest()
 
@@ -98,7 +101,7 @@ def remove_replace_url(text,urls):
     matches = list(re.finditer(url, text))
 
     #check if urls found aren't just from external urls (from "urls" feature) 
-    if len(matches)>len(urls):
+    if len(matches)>len(url):
         last = matches[-1] #get last occurrence
         #check if last occurrence is at the end of text 
         if last.end()==len(text):
