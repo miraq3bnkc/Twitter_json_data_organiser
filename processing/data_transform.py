@@ -85,23 +85,27 @@ def remove_mention_text(text,user_mentions):
             text = text.replace(mention, "ΧΡΗΣΤΗΣ")
     return text
 
-#Remove Urls from text
+#Remove and Replace Urls from text
 
-#specifically removing media urls 
+#1. Specifically removing media urls 
 # (which they exist at the end of the string of feature "text")
+#2. Replacing the rest of the urls with "<URL>"
+# (those are external and exist also in urls feature)
+#
 
-def remove_media_url(text,media,urls):
-    if media>0:
-        url = r"https://t\.co/\S*"
+def remove_replace_url(text,urls):
+    url = r"https://t\.co/\S*"
+    matches = list(re.finditer(url, text))
 
-        matches = list(re.finditer(url, text))
-
-        #check if urls found aren't just from external urls (from urls feature) 
-        if len(matches)>len(urls):
-            last = matches[-1] #get last occurrence
-            #check if last occurrence is at the end of text 
-            if last.end()==len(text):
-                text = text[:last.start()]
+    #check if urls found aren't just from external urls (from "urls" feature) 
+    if len(matches)>len(urls):
+        last = matches[-1] #get last occurrence
+        #check if last occurrence is at the end of text 
+        if last.end()==len(text):
+            text = text[:last.start()]
+    elif matches:
+        #replace url substring in text with <URL>
+        text=re.sub(url,"<URL>",text)
 
     return text
 
@@ -109,5 +113,5 @@ def remove_media_url(text,media,urls):
 def text_cleanup(text,entities):
     [hashtags, media, urls, mentions]=entities
     text=remove_mention_text(text,mentions)
-    text=remove_media_url(text,media,urls)
+    text=remove_replace_url(text,urls)
     return text
