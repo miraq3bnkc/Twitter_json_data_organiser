@@ -1,7 +1,7 @@
 from graph_structure.network_graph import add_graph_features, create_DiGraph, plot_graph, get_graph_features
 from processing.openfiles import load_data,save_file,extract_transform,merge_quotes
 from processing.data_transform import replace_username_id, account_age
-from processing.feature_engineer import get_n_emojis
+from processing.feature_engineer import get_n_emojis, get_capital_ratio
 
 
 path = r"../apify/digital_ids (Copy)" #path that includes the .json files (only) 
@@ -38,6 +38,7 @@ for tweet in tweets:
     tweet["user_mentions"]=len(tweet.get("user_mentions"))
 
     tweet=get_n_emojis(tweet)
+    tweet=get_capital_ratio(tweet)
 
     processed_tweets.append(tweet)
 

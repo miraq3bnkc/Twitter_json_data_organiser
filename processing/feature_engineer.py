@@ -4,17 +4,44 @@ Here exist the creation of the following features:
 
 TEXT FEATURES
     1. emojis : number of emojis in text
+    2. capital_ratio : uppercase letters / alphabetical letters 
+    3. exclamation_marks: number of '!' chars in text
+    4. question_marks: number of '?' and greek ';' chars in text
 
 """
 
 import emoji
 
+#number of emojis : integer ∃[0,10]
 def get_n_emojis(tweet):
     emoji_list = emoji.emoji_list(tweet.get("text"))
 
     emoji_count_capped = min(len(emoji_list), 10) #Note 1
 
     tweet["emojis"]=emoji_count_capped
+
+    return tweet
+
+#ratio of capital letters : float ∃[0.00, 1.00]
+def get_capital_ratio(tweet):
+    text=tweet.get("text")
+
+    #capital ratio needs to be calculated only for the text the poster wrote
+    # '<URL>' and '@ΧΡΗΣΤΗΣ' should be excluded 
+    text= text.replace('@ΧΡΗΣΤΗΣ','')
+    text= text.replace('<URL>','')
+
+    capital_letters = list(filter(str.isupper, text))
+    alphabetical_letters = list(filter(str.isalpha, text))
+
+    #sometimes the post has no written text
+    if alphabetical_letters:
+        ratio= round(len(capital_letters)/len(alphabetical_letters),2)
+        #rounding precision with 2 decimal places
+    else:
+        ratio=0.00 #note 2
+    
+    tweet["capital_ratio"]= ratio
 
     return tweet
 
@@ -29,4 +56,10 @@ E.g. in the dataset we are working with we had the following:
     1 post  with 15  emojis
 
     These were all grouped together (since they are outliers)
+
+Note 2
+If the text body of a post has only lowercase letters, ratio equals 0
+The same happens if there was no text at all, ratio equals 0
+The instances for the latter were minimal, so we did not handle it 
+differently than a text with no uppercase letters!
 '''
