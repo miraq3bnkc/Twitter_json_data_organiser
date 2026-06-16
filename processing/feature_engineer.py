@@ -11,6 +11,7 @@ TEXT FEATURES
 """
 
 import emoji
+import re
 
 #number of emojis : integer ∃[0,10]
 def get_n_emojis(tweet):
@@ -45,6 +46,18 @@ def get_capital_ratio(tweet):
 
     return tweet
 
+#exclamation_marks: integer
+#question_marks:    integer
+def get_punctuation(tweet):
+    text=tweet.get("text")
+
+    question_mark=r'[;,?]'
+    exclamation_mark='!'
+
+    tweet["question_marks"]=min(len(re.findall(question_mark,text)),10) #note 3
+    tweet["exclamation_marks"]=min(len(re.findall(exclamation_mark,text)),5)
+    return tweet
+
 ''' 
 Note 1
 E.g. in the dataset we are working with we had the following:
@@ -62,4 +75,8 @@ If the text body of a post has only lowercase letters, ratio equals 0
 The same happens if there was no text at all, ratio equals 0
 The instances for the latter were minimal, so we did not handle it 
 differently than a text with no uppercase letters!
+
+Note 3
+Just like in Note 1, we capped the results because after certain number
+of punctuation marks the instances become pretty sparse.
 '''
