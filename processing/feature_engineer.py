@@ -58,6 +58,13 @@ def get_punctuation(tweet):
     tweet["exclamation_marks"]=min(len(re.findall(exclamation_mark,text)),5)
     return tweet
 
+#Features that need to be calculated before normalization!
+def add_features_bn(tweet):
+    tweet=get_n_emojis(tweet)
+    tweet=get_capital_ratio(tweet)
+    tweet=get_punctuation(tweet)
+    return tweet
+
 ''' 
 Note 1
 E.g. in the dataset we are working with we had the following:
