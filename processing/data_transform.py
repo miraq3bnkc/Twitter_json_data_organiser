@@ -57,7 +57,7 @@ def transform_urls(article_domain,urls):
 def anonymize_username(username):
     return hashlib.sha256(username.encode()).hexdigest()
 
-
+"""replace_username_id function would no be needed if we extract in the first place the ids form mentions in the raw"""
 irrelevant_users={}
 #Replace usernames with user ids
 def replace_username_id(tweets,users):
@@ -79,7 +79,31 @@ def replace_username_id(tweets,users):
 
         tweets[j]["user_mentions"]=user_mentions
 
+        text,num_mentions=remove_mention_text_2(tweets[j])
+        if len(tweets[j]["user_mentions"])<num_mentions:
+            tweets[j]["user_mentions"].append("forgotten_mention")
+        tweets[j]["text"]=text
+
     return tweets
+
+
+def remove_mention_text_2(tweet):
+    #check also for mentions that were not removed from text with remove_mention_text
+    mention_regex=r'^(@[A-Za-z0-9_]+\s)' #check if we have in the beginning of the text only a mention that wasn't removed
+    text=tweet['text']
+    text=re.sub(mention_regex,'@ΧΡΗΣΤΗΣ',text)
+    
+    #do the same in repeat for at least two times 
+    #just to be sure we got all users from a conversation thread
+    end=0
+    for i in range(0,2):
+        match=re.match('@ΧΡΗΣΤΗΣ ',text[end:])
+        if match:
+            end=match.end()*(i+1)
+            temp=re.sub(mention_regex,'@ΧΡΗΣΤΗΣ ',text[end:])
+            text=text[match.start():end]+temp
+    
+    return text,len(re.findall('@ΧΡΗΣΤΗΣ',text))
 
 #Remove mentions from text
 def remove_mention_text(text,user_mentions):

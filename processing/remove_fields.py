@@ -8,7 +8,7 @@
    an Apify actor: https://apify.com/apidojo/tweet-scraper.
    The changes are curated for the specific analysis. 
 """
-from processing.data_transform import transform_mentions, transform_urls, text_cleanup
+from processing.data_transform import transform_mentions, text_cleanup
 
 """Profession Data not included after all
 These metadata were defined only on 19.5% of our dataset.
