@@ -103,7 +103,7 @@ def remove_mention_text_2(tweet):
             temp=re.sub(mention_regex,'@ΧΡΗΣΤΗΣ ',text[end:])
             text=text[match.start():end]+temp
     
-    return text,len(re.findall('@ΧΡΗΣΤΗΣ',text))
+    return text,len(re.findall('@ΧΡΗΣΤΗΣ',text))-1
 
 #Remove mentions from text
 def remove_mention_text(text,user_mentions):
