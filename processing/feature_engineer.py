@@ -7,6 +7,7 @@ TEXT FEATURES
     2. capital_ratio : uppercase letters / alphabetical letters 
     3. exclamation_marks: number of '!' chars in text
     4. question_marks: number of '?' and greek ';' chars in text
+    5. n_chars: number of characters in post
 
 """
 
@@ -63,6 +64,11 @@ def add_features_bn(tweet):
     tweet=get_n_emojis(tweet)
     tweet=get_capital_ratio(tweet)
     tweet=get_punctuation(tweet)
+    return tweet
+
+#feature calculated during preprocessing of text
+def get_n_chars(tweet):
+    tweet["n_chars"]=len(tweet.get('text'))
     return tweet
 
 ''' 

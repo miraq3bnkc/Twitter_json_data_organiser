@@ -1,7 +1,8 @@
 from graph_structure.network_graph import add_graph_features, create_DiGraph, plot_graph, get_graph_features
 from processing.openfiles import load_data,save_file,extract_transform,merge_quotes
 from processing.data_transform import replace_username_id, account_age
-from processing.feature_engineer import add_features_bn
+from processing.feature_engineer import add_features_bn, get_n_chars
+from processing.text_clean_up import normalize_basics
 
 
 path = r"../apify/digital_ids (Copy)" #path that includes the .json files (only) 
@@ -38,6 +39,8 @@ for tweet in tweets:
     tweet["user_mentions"]=len(tweet.get("user_mentions"))
 
     tweet=add_features_bn(tweet)
+    tweet["text"]=normalize_basics(tweet.get("text"))
+    tweet=get_n_chars(tweet)
 
     processed_tweets.append(tweet)
 
