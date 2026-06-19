@@ -118,27 +118,38 @@ def remove_mention_text(text,user_mentions):
 # (which they exist at the end of the string of feature "text")
 #2. Replacing the rest of the urls with "<URL>"
 # (those are external and exist also in urls feature)
-#
+# (in linked_article_text, urls have different representation
+# and do not exist in urls feature)
 
-def remove_replace_url(text,urls):
-    url = r"https://t\.co/\S*"
+def remove_replace_url(text,urls,isTweet):
+    if isTweet:
+        url = r"https://t\.co/\S*"
+    else:
+        url=r'(https?://[^\sα-ω]+|www\.[^\sα-ω]+)'
+
+    #find urls in the text
     matches = list(re.finditer(url, text))
 
-    #check if urls found aren't just from external urls (from "urls" feature) 
-    if len(matches)>len(url):
+    #check if urls found aren't just from external urls (from "urls" feature)
+    # only for tweet text 
+    if len(matches)>len(urls) and isTweet:
         last = matches[-1] #get last occurrence
         #check if last occurrence is at the end of text 
         if last.end()==len(text):
             text = text[:last.start()]
-    elif matches:
+            # recompute matches because text changed
+            matches = list(re.finditer(url, text))
+    
+    if matches:
         #replace url substring in text with <URL>
         text=re.sub(url,"<URL>",text)
 
     return text
 
 
-def text_cleanup(text,entities):
+def text_cleanup(text,entities,isTweet):
     [hashtags, media, urls, mentions]=entities
-    text=remove_mention_text(text,mentions)
-    text=remove_replace_url(text,urls)
+    if text:
+        text=remove_mention_text(text,mentions)
+        text=remove_replace_url(text,urls,isTweet)
     return text

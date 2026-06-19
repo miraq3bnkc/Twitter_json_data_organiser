@@ -129,7 +129,7 @@ def clean_tweet(tweet, are_quote_data):
     
     cleaned_tweet={
         "id": tweet.get("id"),
-        "text": text_cleanup(tweet.get("text"),entities),
+        "text": text_cleanup(tweet.get("text"),entities,True),
         "retweetCount":tweet.get("retweetCount"),
         "replyCount": tweet.get("replyCount"),
         "likeCount": tweet.get("likeCount"),
@@ -138,7 +138,7 @@ def clean_tweet(tweet, are_quote_data):
         "createdAt": tweet.get("createdAt"),
         "bookmarkCount": tweet.get("bookmarkCount"),
         "author" : author_element,
-        "linked_article_values": linked_info,
+        "linked_article_values": text_cleanup(linked_info,entities,False),
         "hashtags": entities[0],
         "media": entities[1],
         "urls": len(entities[2]),
