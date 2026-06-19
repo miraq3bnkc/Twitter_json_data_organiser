@@ -9,6 +9,7 @@ TEXT FEATURES
     4. exclamation_marks: number of '!' chars in text
     5. question_marks: number of '?' and greek ';' chars in text
     6. n_chars: number of characters in post
+    7. n_words: number of words in post's text
 
 """
 
@@ -73,6 +74,10 @@ def add_features_bn(tweet):
 #feature calculated during preprocessing of text
 def get_n_chars(tweet):
     tweet["n_chars"]=len(tweet.get('text'))
+    return tweet
+
+def get_n_words(tweet):
+    tweet["n_words"]=len(tweet["text"].split())
     return tweet
 
 ''' 
