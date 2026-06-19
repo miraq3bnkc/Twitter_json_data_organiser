@@ -3,24 +3,28 @@ The purpose of this file is the creation of new and derived features.
 Here exist the creation of the following features:
 
 TEXT FEATURES
-    1. emojis : number of emojis in text
-    2. capital_ratio : uppercase letters / alphabetical letters 
-    3. exclamation_marks: number of '!' chars in text
-    4. question_marks: number of '?' and greek ';' chars in text
-    5. n_chars: number of characters in post
+    1. n_emojis : number of emojis in text 
+    2. emoji_list : keeps track of every emoji in text and the number of times it was used
+    3. capital_ratio : uppercase letters / alphabetical letters 
+    4. exclamation_marks: number of '!' chars in text
+    5. question_marks: number of '?' and greek ';' chars in text
+    6. n_chars: number of characters in post
 
 """
 
 import emoji
 import re
+from collections import Counter
 
-#number of emojis : integer ∃[0,10]
+#number of emojis  : integer ∃[0,10]
+#counter of emojis : dictionary { emoji_char : integer (frequency of emoji in text) }
 def get_n_emojis(tweet):
-    emoji_list = emoji.emoji_list(tweet.get("text"))
-
+    emoji_list = emoji.emoji_list(tweet.get("text")) #dictionary with emoji positions and emojis
+    emoji_list = [e["emoji"] for e in emoji_list] #convert to list with only the emojis
     emoji_count_capped = min(len(emoji_list), 10) #Note 1
 
-    tweet["emojis"]=emoji_count_capped
+    tweet["n_emojis"]=emoji_count_capped
+    tweet["emoji_list"] = Counter(emoji_list)
 
     return tweet
 
