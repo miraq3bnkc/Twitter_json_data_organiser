@@ -20,6 +20,7 @@ POPULARITY FEATURES
 
 """
 
+from math import log1p
 import emoji
 import re
 from collections import Counter
@@ -154,22 +155,25 @@ of punctuation marks the instances become pretty sparse.
 '''USER FEATURES'''
 
 #followers/following : float ∃[0.00, infinity)
+#the ratio is transformed with log(x+1) in order to avoid outliers 
 def get_followers_following_ratio(author):
     followers=author['followers']
     following=author['following']
-    if following:
-        ratio=round(followers/following,2)
-    else:
-        ratio=0
+
+    ratio=round(log1p(followers)-log1p(following),2)
+
     author["followers_following_ratio"]=ratio
     return author
 
 #posts/day : float ∃[0.0, infinity)
+#we use log transform to avoid outliers
+#we keep the raw activity for reference
 def get_activity(author):
     posts=author["statusesCount"]
     days=author["account_age_days"]
     #we dont check for division by zero since days>0 always
-    author["activity"]=round(posts/days,1)
+    author["activity"]=round(log1p(posts/days),1)
+    author["raw_activity"]=round(posts/days,1)
     return author
 
 #media/post : float ∃[0.00, 1.00]
