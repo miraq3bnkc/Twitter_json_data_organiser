@@ -14,6 +14,7 @@ TEXT FEATURES
 USER FEATURES
     1. followers_following_ratio : followers/following
     2. activity: average number of statuses per day
+    3. media_ratio: number of media posts/statuses , are most of the posts just media?
 
 """
 
@@ -167,4 +168,12 @@ def get_activity(author):
     days=author["account_age_days"]
     #we dont check for division by zero since days>0 always
     author["activity"]=round(posts/days,1)
+    return author
+
+#posts/day : float ∃[0.0, 1.0)
+def get_media_ratio(author):
+    posts=author["statusesCount"]
+    media=author["mediaCount"]
+
+    author["media_ratio"]=round(media/posts,1)
     return author
