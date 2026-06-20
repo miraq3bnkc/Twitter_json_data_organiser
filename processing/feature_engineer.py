@@ -80,6 +80,39 @@ def get_n_words(tweet):
     tweet["n_words"]=len(tweet["text"].split())
     return tweet
 
+
+#EMOJI CATEGORIES FOUND IN OUR DATASET
+# categories may be different for other datasets
+# emojis found that do not exist in these categories where mostly neutral 
+emoji_categories = {
+    "vaccine": {"💉", "💊", "🦇", "🦠"},
+    "id": {"🪪", "🆔", "📲", "📱", "🫆"},
+    "ridicule": {"😂", "🤣", "🤡", "😜", "😁", "☺️", "🐑", "🙄", "😏", "😀", "😅", "😭", "🤪", "🍿", "🤦", "🤭", "🥳", "🤑", "👑", "😘", "😹", "🐒", "🤫", "🌟", "😍", "🙂", "🦧", "🤦‍♀️", "😄", "🥸", "😆", "👺", "🤦🏽‍♀️", "🐄", "🐵", "🐍", "🤴", "🤌🏻", "🤦‍♂️", "💖", "🥒", "🤦🏻", "👻", "💕", "💓", "❤️‍🔥", "💞", "🌹", "🫶🏼", "☺", "😛", "🫶🏻", "🥱", "🤗"},
+    "alert": {"🚨", "❗", "🆘", "‼️", "🔥", "⚠️", "❓", "⏰", "🫵", "ℹ", "🗣️", "📢", "💥", "🛑", "📣", "🔊", "👂", "⁉️", "🕒", "⁉"},
+    "direction": {"👇", "👉", "➡️", "👇🏻", "⏬", "⬇️", "➡", "🔗", "⤵️", "👈", "⬆️", "🌐", "👇🏽", "👆", "🔁", "⏩", "⤵", "◀️"},
+    "hostility": {"🖕", "🤮", "😡", "❌", "🖐️", "🤬", "👿", "😈", "⛔", "🖐", "⭕",  "🚫", "🍒"},
+    "identity": {"🇬🇷", "🇬🇧", "☦️", "🇪🇺", "🇫🇷", "✝️", "🇺🇸", "🇵🇸", "🇪🇸", "☦", "🇸🇻", "🇮🇱", "🇮🇹", "🇨🇾", "🇷🇺"},
+    "thinking": {"🤔", "🤨", "🧠", "👀", "🤷🏼‍♀️", "🤷‍♀️", "🤷"},
+    "support": {"👏", "🤝", "👍", "👊",  "✌️",  "🙏", "💪", "💯", "👌", "🥂", "💙", "✊", "🤘", "🥇", "🍺", "🙏🏻", "💫", "👍🏼", "👌🏼", "🌺", "🎉" "😇"},
+    "smugness": {"😎", "🤠", "😋", "😉"},
+    "negative": {"😱", "🙈", "🫣", "😬", "🙃", "😵‍💫", "😲", "😳", "🤯", "😔", "🥹" "😶" "😶‍🌫️", "🫠", "🥺", "🥴", "🥲", "😢", "😤", "😵", "😣", "😐", "💀", "😰", "🫤", "🫥" "🐉", "🔒"}
+}
+
+def emoji_sentiment(tweet):
+    emojis = tweet.get("emoji_list",{})
+
+    for category in emoji_categories:
+        tweet[f"emoji_{category}_count"] = 0
+
+    for emoji,count in emojis.items():
+        for category, emoji_set in emoji_categories.items():
+            if emoji in emoji_set:
+                tweet[f"emoji_{category}_count"] += count
+                break
+    del tweet["emoji_list"]
+    return tweet
+
+
 ''' 
 Note 1
 E.g. in the dataset we are working with we had the following:
