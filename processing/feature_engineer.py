@@ -75,13 +75,6 @@ def get_punctuation(tweet):
     tweet["exclamation_marks"]=min(len(re.findall(exclamation_mark,text)),5)
     return tweet
 
-#Features that need to be calculated before normalization!
-def add_features_bn(tweet):
-    tweet=get_n_emojis(tweet)
-    tweet=get_capital_ratio(tweet)
-    tweet=get_punctuation(tweet)
-    return tweet
-
 #feature calculated during preprocessing of text
 #n_chars: integer
 def get_n_chars(tweet):
@@ -197,4 +190,32 @@ def get_engagement_rate(tweet):
     else:
         rate=0
     tweet["engagement_rate"]=rate
+    return tweet
+
+
+##############################################################################################
+#       GENERAL FUNCTIONS 
+
+#Features that need to be calculated before normalization!
+def add_features_bn(tweet):
+    tweet=get_n_emojis(tweet)
+    tweet=get_capital_ratio(tweet)
+    tweet=get_punctuation(tweet)
+    return tweet
+
+#during normalization n_chars are calculated (before we remove important symbols)
+#and after the normalization of text we get n_words
+#We group with "after text normalization" phase all features we want to add
+#even if they are not depended on text. 
+
+#General function for all the rest features we want to add
+def add_features(tweet):
+    tweet=get_n_words(tweet)
+    tweet=emoji_sentiment(tweet)
+    tweet["author"]=get_followers_following_ratio(tweet["author"])
+    tweet["author"]=get_activity(tweet["author"])
+    tweet["author"]=get_media_ratio(tweet["author"])
+
+    tweet=get_engagement_rate(tweet)
+
     return tweet
