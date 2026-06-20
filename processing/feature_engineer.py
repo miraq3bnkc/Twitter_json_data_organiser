@@ -13,6 +13,7 @@ TEXT FEATURES
     8. emoji_category_count: label of what category of emoji was used and how many times
 USER FEATURES
     1. followers_following_ratio : followers/following
+    2. activity: average number of statuses per day
 
 """
 
@@ -158,4 +159,12 @@ def get_followers_following_ratio(author):
     else:
         ratio=0
     author["followers_following_ratio"]=ratio
+    return author
+
+#posts/day : float ∃[0.0, infinity)
+def get_activity(author):
+    posts=author["statusesCount"]
+    days=author["account_age_days"]
+    #we dont check for division by zero since days>0 always
+    author["activity"]=round(posts/days,1)
     return author
