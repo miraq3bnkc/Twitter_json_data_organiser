@@ -1,7 +1,7 @@
 from graph_structure.network_graph import add_graph_features, create_DiGraph, plot_graph, get_graph_features
 from processing.openfiles import load_data,save_file,extract_transform,merge_quotes
 from processing.data_transform import replace_username_id, account_age
-from processing.feature_engineer import add_features_bn, emoji_sentiment, get_n_chars, get_n_words,get_followers_following_ratio,get_activity, get_media_ratio
+from processing.feature_engineer import add_features_bn, emoji_sentiment, get_n_chars, get_n_words,get_followers_following_ratio,get_activity, get_media_ratio, get_engagement_rate
 from processing.text_clean_up import normalize_basics,text_clean_up
 
 
@@ -48,6 +48,8 @@ for tweet in tweets:
     tweet["author"]=get_followers_following_ratio(tweet["author"])
     tweet["author"]=get_activity(tweet["author"])
     tweet["author"]=get_media_ratio(tweet["author"])
+
+    tweet=get_engagement_rate(tweet)
 
     processed_tweets.append(tweet)
 

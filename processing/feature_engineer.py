@@ -15,6 +15,8 @@ USER FEATURES
     1. followers_following_ratio : followers/following
     2. activity: average number of statuses per day
     3. media_ratio: number of media posts/statuses , are most of the posts just media?
+POPULARITY FEATURES
+    1. engagement_rate : number of likes+retweet+reply+quote+bookmark per view
 
 """
 
@@ -170,10 +172,25 @@ def get_activity(author):
     author["activity"]=round(posts/days,1)
     return author
 
-#posts/day : float ∃[0.0, 1.0)
+#media/post : float ∃[0.00, 1.00]
 def get_media_ratio(author):
     posts=author["statusesCount"]
     media=author["mediaCount"]
 
     author["media_ratio"]=round(media/posts,1)
     return author
+
+################################################################################
+'''POPULARITY FEATURES'''
+
+#engagement/views : float ∃[0.00, 1.00]
+def get_engagement_rate(tweet):
+    engagement=tweet["retweetCount"]+tweet["replyCount"]+tweet["likeCount"]+tweet["quoteCount"]+tweet["bookmarkCount"]
+    views=tweet["viewCount"]
+
+    if views:
+        rate=round(engagement/views,2)
+    else:
+        rate=0
+    tweet["engagement_rate"]=rate
+    return tweet
