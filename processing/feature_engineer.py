@@ -4,18 +4,24 @@ Here exist the creation of the following features:
 
 TEXT FEATURES
     1. n_emojis : number of emojis in text 
-    2. emoji_list : keeps track of every emoji in text and the number of times it was used
+    2. emoji_list : keeps track of every emoji in text and the number of times it was used - REMOVED
     3. capital_ratio : uppercase letters / alphabetical letters 
     4. exclamation_marks: number of '!' chars in text
     5. question_marks: number of '?' and greek ';' chars in text
     6. n_chars: number of characters in post
     7. n_words: number of words in post's text
+    8. emoji_category_count: label of what category of emoji was used and how many times
+USER FEATURES
+    1. followers_following_ratio : followers/following
 
 """
 
 import emoji
 import re
 from collections import Counter
+
+
+'''TEXT FEATURES'''
 
 #number of emojis  : integer ∃[0,10]
 #counter of emojis : dictionary { emoji_char : integer (frequency of emoji in text) }
@@ -72,10 +78,13 @@ def add_features_bn(tweet):
     return tweet
 
 #feature calculated during preprocessing of text
+#n_chars: integer
 def get_n_chars(tweet):
     tweet["n_chars"]=len(tweet.get('text'))
     return tweet
 
+#feature after complete preprocessing
+#n_words: integer
 def get_n_words(tweet):
     tweet["n_words"]=len(tweet["text"].split())
     return tweet
@@ -98,6 +107,7 @@ emoji_categories = {
     "negative": {"😱", "🙈", "🫣", "😬", "🙃", "😵‍💫", "😲", "😳", "🤯", "😔", "🥹" "😶" "😶‍🌫️", "🫠", "🥺", "🥴", "🥲", "😢", "😤", "😵", "😣", "😐", "💀", "😰", "🫤", "🫥" "🐉", "🔒"}
 }
 
+#emoji_category_count : integer
 def emoji_sentiment(tweet):
     emojis = tweet.get("emoji_list",{})
 
@@ -135,3 +145,17 @@ Note 3
 Just like in Note 1, we capped the results because after certain number
 of punctuation marks the instances become pretty sparse.
 '''
+
+###############################################################################
+'''USER FEATURES'''
+
+#followers/following : float ∃[0.00, infinity)
+def get_followers_following_ratio(author):
+    followers=author['followers']
+    following=author['following']
+    if following:
+        ratio=round(followers/following,2)
+    else:
+        ratio=0
+    author["followers_following_ratio"]=ratio
+    return author
