@@ -41,7 +41,7 @@ def extract_author(author):
         "isBlueVerified":author.get("isBlueVerified"),
         "followers": author.get("followers"),
         "following": author.get("following"),
-        "createdAt": author.get("createdAt"),
+        "user_createdAt": author.get("createdAt"),
         "favouritesCount": author.get("favouritesCount"),
         "mediaCount": author.get("mediaCount"),
         "statusesCount": author.get("statusesCount"),
@@ -76,7 +76,7 @@ def extract_card(card):
     if article_description or article_title:
         linked_article_info = '\n'.join(filter(None,article_text))
     else:
-        linked_article_info = None
+        linked_article_info = ""
 
     return linked_article_info, article_domain
 
@@ -137,13 +137,16 @@ def clean_tweet(tweet, are_quote_data):
         "viewCount": tweet.get("viewCount"),
         "createdAt": tweet.get("createdAt"),
         "bookmarkCount": tweet.get("bookmarkCount"),
-        "author" : author_element,
         "linked_article_values": text_cleanup(linked_info,entities,False),
         "hashtags": entities[0],
         "media": entities[1],
         "urls": len(entities[2]),
-        "user_mentions": entities[3]
+        "user_mentions": entities[3],
+        "isReply": tweet.get("isReply"),
+        "isQuote": tweet.get("isQuote")
     }
+
+    cleaned_tweet.update(author_element)
 
     #If the data we are handling are not of the quote then we shall include
     # "isReply" fields
@@ -170,6 +173,8 @@ def clean_tweet(tweet, are_quote_data):
             cleaned_tweet["quoted_user_id"] = tweet.get("quote").get("author").get("id")
             #add in number of media of the post also the number of media from the quote
             cleaned_tweet["media"]+=cleaned_quote.get("media")
+    else:
+        cleaned_tweet["quoted_text"]=""
 
     if are_quote_data :
         #basically returns only the quote data and user_info 

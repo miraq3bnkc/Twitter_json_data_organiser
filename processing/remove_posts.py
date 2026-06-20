@@ -48,8 +48,14 @@ def delete_tweets(tweet):
     url = tweet.get("url")
     expanded_url = extract_expanded_url(tweet)
 
+    #check if this function is called after flattening
+    if tweet.get("author"):
+        username = tweet.get("author").get("userName")
+    else:
+        username = tweet.get("userName")
+
     #Rule 0: Filter out @grok posts
-    if not tweet.get("author").get("userName")=="grok":
+    if not username=="grok":
 
         # Rule 1: Contains text in Greek language
         if contains_greek(text):

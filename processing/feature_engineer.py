@@ -212,9 +212,9 @@ def add_features_bn(tweet):
 def add_features(tweet):
     tweet=get_n_words(tweet)
     tweet=emoji_sentiment(tweet)
-    tweet["author"]=get_followers_following_ratio(tweet["author"])
-    tweet["author"]=get_activity(tweet["author"])
-    tweet["author"]=get_media_ratio(tweet["author"])
+    tweet=get_followers_following_ratio(tweet)
+    tweet=get_activity(tweet)
+    tweet=get_media_ratio(tweet)
 
     tweet=get_engagement_rate(tweet)
 

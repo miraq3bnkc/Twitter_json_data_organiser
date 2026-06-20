@@ -9,14 +9,14 @@ def parse_date(tweet):
     return datetime.strptime(tweet["createdAt"], "%a %b %d %H:%M:%S %z %Y")
 
 def account_age(tweet):
-    creation_date=parse_date(tweet["author"]).date()
+    creation_date=datetime.strptime(tweet["user_createdAt"], "%a %b %d %H:%M:%S %z %Y").date()
     today = date.today()
     #account age in days
     account_age=(today-creation_date).days
 
     #make new field about age and remove the createdAt
-    tweet["author"]["account_age_days"] = account_age
-    del tweet["author"]["createdAt"]
+    tweet["account_age_days"] = account_age
+    del tweet["user_createdAt"]
 
     return tweet
 

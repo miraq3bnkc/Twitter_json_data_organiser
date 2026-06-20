@@ -12,7 +12,7 @@ def create_DiGraph(users,tweets):
     G.add_nodes_from(users.values())
 
     for tweet in tweets:
-        user_node=tweet["author"]["user_id"] #source node
+        user_node=tweet["user_id"] #source node
         
         #add edges for all the replies
         reply=tweet.get("inReplyToUserId") #target node
@@ -128,20 +128,20 @@ def get_graph_features(Graph):
 
 
 def add_graph_features(G,tweet,features,degrees):
-    user_id=tweet["author"].get("user_id")
-    tweet["author"]["betweenness"]=features[0][user_id]
-    tweet["author"]["pagerank"]=features[1][user_id]
-    tweet["author"]["clustering"]=features[2][user_id]
-    tweet["author"]["core"]=features[3][user_id]
+    user_id=tweet.get("user_id")
+    tweet["betweenness"]=features[0][user_id]
+    tweet["pagerank"]=features[1][user_id]
+    tweet["clustering"]=features[2][user_id]
+    tweet["core"]=features[3][user_id]
     if user_id in features[4]:
-        tweet["author"]["has_selfloop"]=True
-        tweet["author"]["weight"] = G[user_id][user_id]["weight"] 
+        tweet["has_selfloop"]=True
+        tweet["weight"] = G[user_id][user_id]["weight"] 
     else:
-        tweet["author"]["has_selfloop"]=False
+        tweet["has_selfloop"]=False
     
-    tweet["author"]["indeg"]=degrees[0][user_id]
-    tweet["author"]["outdeg"]=degrees[1][user_id]
-    tweet["author"]["weighted_indeg"]=degrees[2][user_id]
-    tweet["author"]["weighted_outdeg"]=degrees[3][user_id]
+    tweet["indeg"]=degrees[0][user_id]
+    tweet["outdeg"]=degrees[1][user_id]
+    tweet["weighted_indeg"]=degrees[2][user_id]
+    tweet["weighted_outdeg"]=degrees[3][user_id]
 
     return tweet
