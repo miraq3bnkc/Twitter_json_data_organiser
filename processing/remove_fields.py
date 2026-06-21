@@ -134,7 +134,7 @@ def clean_tweet(tweet, are_quote_data):
         "replyCount": tweet.get("replyCount"),
         "likeCount": tweet.get("likeCount"),
         "quoteCount": tweet.get("quoteCount"),
-        "viewCount": tweet.get("viewCount"),
+        "viewCount": tweet.get("viewCount",0),
         "createdAt": tweet.get("createdAt"),
         "bookmarkCount": tweet.get("bookmarkCount"),
         "linked_article_values": text_cleanup(linked_info,entities,False),
