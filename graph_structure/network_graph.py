@@ -135,7 +135,7 @@ def add_graph_features(G,tweet,features,degrees):
     tweet["core"]=features[3][user_id]
     if user_id in features[4]:
         tweet["has_selfloop"]=True
-        tweet["weight"] = G[user_id][user_id]["weight"] 
+        tweet["selfloop_weight"] = G[user_id][user_id]["weight"] 
     else:
         tweet["has_selfloop"]=False
     
