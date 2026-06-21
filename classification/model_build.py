@@ -1,6 +1,7 @@
 import pandas as pd 
 from sklearn.compose import ColumnTransformer
 from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.feature_selection import SelectKBest, f_classif
 from sklearn.model_selection import StratifiedKFold, cross_validate, train_test_split
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import classification_report
@@ -40,21 +41,21 @@ def build_model(
     if use_text:
         transformers.append(
             ("text",
-             TfidfVectorizer(max_features=5000),
+             TfidfVectorizer(max_features=1000),
                 "text")
         )
 
     if use_article:
         transformers.append(
             ("article",
-             TfidfVectorizer(max_features=3000),
+             TfidfVectorizer(max_features=1000),
              "linked_article_values")
         )
 
     if use_quote:
         transformers.append(
             ("quote",
-             TfidfVectorizer(max_features=2000),
+             TfidfVectorizer(max_features=1000),
              "quoted_text")
         )
 
@@ -96,9 +97,9 @@ def build_model(
     ])
 
 
-def print_results(model):
+def get_results(model):
     #print(classification_report(y_test, predictions))
-
+    start = time()
     results = cross_validate(
         model,
         X,
@@ -108,7 +109,8 @@ def print_results(model):
             "f1": "f1_macro",
             "precision": "precision_macro",
             "recall": "recall_macro"
-        }
+        },
+        n_jobs=-1
     )
 
     for metric in ["test_f1", "test_precision", "test_recall"]:
@@ -118,6 +120,8 @@ def print_results(model):
         print(f"  Std:    {results[metric].std():.4f}")
         print()
 
+
+    print(time() - start)
 
 
 
@@ -180,125 +184,31 @@ cv = StratifiedKFold(
 
 print("########################   MODEL 1 #########################\n")
 model1 = build_model(
-    use_text=False,
-    use_text_metadata=True
+    use_text=True,
 )
-#model1.fit(X_train, y_train)
-#predictions1 = model1.predict(X_test)
-start = time()
-results = cross_validate(
-    model1,
-    X,
-    y,
-    cv=cv,
-    scoring={
-        "f1": "f1_macro",
-        "precision": "precision_macro",
-        "recall": "recall_macro"
-    },
-    n_jobs=-1
-)
-
-for metric in ["test_f1", "test_precision", "test_recall"]:
-    print(f"{metric}:")
-    print(f"  Scores: {results[metric]}")
-    print(f"  Mean:   {results[metric].mean():.4f}")
-    print(f"  Std:    {results[metric].std():.4f}")
-    print()
-
-print(time() - start)
+get_results(model1)
 
 print("########################   MODEL 2 #########################\n")
 model2 = build_model(
-    use_text=True
-)
-#model2.fit(X_train, y_train)
-#predictions2 = model2.predict(X_test)
-start = time()
-results = cross_validate(
-    model2,
-    X,
-    y,
-    cv=cv,
-    scoring={
-        "f1": "f1_macro",
-        "precision": "precision_macro",
-        "recall": "recall_macro"
-    },
-    n_jobs=-1
-)
-
-for metric in ["test_f1", "test_precision", "test_recall"]:
-    print(f"{metric}:")
-    print(f"  Scores: {results[metric]}")
-    print(f"  Mean:   {results[metric].mean():.4f}")
-    print(f"  Std:    {results[metric].std():.4f}")
-    print()
-
-print(time() - start)
-
-print("########################   MODEL 3 #########################\n")
-model3 = build_model(
     use_text=True,
     use_text_metadata=True
 )
-#model3.fit(X_train, y_train)
-#predictions3 = model3.predict(X_test)
-start = time()
-results = cross_validate(
-    model3,
-    X,
-    y,
-    cv=cv,
-    scoring={
-        "f1": "f1_macro",
-        "precision": "precision_macro",
-        "recall": "recall_macro"
-    },
-    n_jobs=-1
-)
+get_results(model2)
 
-for metric in ["test_f1", "test_precision", "test_recall"]:
-    print(f"{metric}:")
-    print(f"  Scores: {results[metric]}")
-    print(f"  Mean:   {results[metric].mean():.4f}")
-    print(f"  Std:    {results[metric].std():.4f}")
-    print()
-
-
-print(time() - start)
-
-
-print("########################   MODEL 4 #########################\n")
-model4 = build_model( 
+print("########################   MODEL 3 #########################\n")
+model3 = build_model( 
     use_text=True,
     use_article=True
     )
-#model3.fit(X_train, y_train)
-#predictions3 = model3.predict(X_test)
-start = time()
-results = cross_validate(
-    model4,
-    X,
-    y,
-    cv=cv,
-    scoring={
-        "f1": "f1_macro",
-        "precision": "precision_macro",
-        "recall": "recall_macro"
-    },
-    n_jobs=-1
+get_results(model3)
+
+print("########################   MODEL 4  #########################\n")
+model4 = build_model(
+    use_text=True,
+    use_article=True,
+    use_quote=True
 )
-
-for metric in ["test_f1", "test_precision", "test_recall"]:
-    print(f"{metric}:")
-    print(f"  Scores: {results[metric]}")
-    print(f"  Mean:   {results[metric].mean():.4f}")
-    print(f"  Std:    {results[metric].std():.4f}")
-    print()
-
-
-print(time() - start)
+get_results(model4)
 
 print("########################   MODEL 5 #########################\n")
 model5 = build_model(
@@ -306,59 +216,70 @@ model5 = build_model(
     use_article=True,
     use_text_metadata=True
 )
-#model3.fit(X_train, y_train)
-#predictions3 = model3.predict(X_test)
-start = time()
-results = cross_validate(
-    model5,
-    X,
-    y,
-    cv=cv,
-    scoring={
-        "f1": "f1_macro",
-        "precision": "precision_macro",
-        "recall": "recall_macro"
-    },
-    n_jobs=-1
-)
-
-for metric in ["test_f1", "test_precision", "test_recall"]:
-    print(f"{metric}:")
-    print(f"  Scores: {results[metric]}")
-    print(f"  Mean:   {results[metric].mean():.4f}")
-    print(f"  Std:    {results[metric].std():.4f}")
-    print()
-
-
-print(time() - start)
+get_results(model5)
 
 print("########################   MODEL 6  #########################\n")
 model6 = build_model(
     use_text=True,
+    use_article=True,
+    use_text_metadata=True,
+    use_quote=True
+)
+get_results(model6)
+
+print("########################   MODEL 7  #########################\n")
+model7 = build_model(
+    use_text=True,
     use_engagement=True
 )
-#model3.fit(X_train, y_train)
-#predictions3 = model3.predict(X_test)
-start = time()
-results = cross_validate(
-    model6,
-    X,
-    y,
-    cv=cv,
-    scoring={
-        "f1": "f1_macro",
-        "precision": "precision_macro",
-        "recall": "recall_macro"
-    },
-    n_jobs=-1
+get_results(model7)
+
+print("########################   MODEL 8  #########################\n")
+model8 = build_model(
+    use_text=True,
+    use_user=True
 )
+get_results(model8)
 
-for metric in ["test_f1", "test_precision", "test_recall"]:
-    print(f"{metric}:")
-    print(f"  Scores: {results[metric]}")
-    print(f"  Mean:   {results[metric].mean():.4f}")
-    print(f"  Std:    {results[metric].std():.4f}")
-    print()
+print("########################   MODEL 9  #########################\n")
+model9 = build_model(
+    use_text=True,
+    use_user=True,
+    use_network=True,
+    use_engagement=True
+)
+get_results(model9)
 
+print("########################   MODEL 10  #########################\n")
+model10 = build_model(
+    use_text=True,
+    use_article=True,
+    use_quote=True,
+    use_user=True,
+    use_network=True,
+    use_engagement=True
+)
+get_results(model10)
 
-print(time() - start)
+print("########################   MODEL 11  #########################\n")
+model11 = build_model(
+    use_text=True,
+    use_article=True,
+    use_quote=True,
+    use_text_metadata=True,
+    use_user=True,
+    use_network=True,
+    use_engagement=True
+)
+get_results(model11)
+
+print("########################   MODEL 12  #########################\n")
+model12 = build_model(
+    use_article=True,
+    use_quote=True,
+    use_text_metadata=True,
+    use_user=True,
+    use_network=True,
+    use_engagement=True
+)
+get_results(model12)
