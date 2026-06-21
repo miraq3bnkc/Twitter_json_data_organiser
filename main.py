@@ -44,6 +44,18 @@ for tweet in tweets:
     
     tweet=text_clean_up(tweet)
     tweet=add_features(tweet)
+
+    #delete fields that are not needed in the next step for classification
+    if tweet["isReply"]:
+        del tweet["inReplyToId"]
+        del tweet["inReplyToUserId"]
+    if tweet["isQuote"]:
+        del tweet["quoted_tweet_id"]
+        del tweet["quoted_user_id"]
+    del tweet["id"]
+    del tweet["createdAt"]
+    del tweet["user_id"]
+    
     processed_tweets.append(tweet)
 
 save_file("processed.json",processed_tweets)

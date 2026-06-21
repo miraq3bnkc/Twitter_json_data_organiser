@@ -142,8 +142,8 @@ def clean_tweet(tweet, are_quote_data):
         "media": entities[1],
         "urls": len(entities[2]),
         "user_mentions": entities[3],
-        "isReply": tweet.get("isReply"),
-        "isQuote": tweet.get("isQuote")
+        "isReply": tweet.get("isReply",False),
+        "isQuote": tweet.get("isQuote",False)
     }
 
     cleaned_tweet.update(author_element)
@@ -165,6 +165,7 @@ def clean_tweet(tweet, are_quote_data):
     if tweet.get("isQuote"):
         if "quote" in tweet:    
             #keep quote as a SEPARATE tweet
+            #for quotes, isReply and isQuotes are undefined , so they have a False label
             cleaned_quote,quote_user = clean_tweet(tweet["quote"], are_quote_data=True)
 
             #we only keep the text and id of the quote as context
