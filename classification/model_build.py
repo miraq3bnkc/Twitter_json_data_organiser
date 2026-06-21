@@ -5,6 +5,9 @@ from sklearn.model_selection import StratifiedKFold, cross_validate, train_test_
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import classification_report
 from sklearn.pipeline import Pipeline
+from time import time
+
+from sklearn.preprocessing import StandardScaler
 
 #Add LABELS
 def get_labels(tweets):
@@ -23,115 +26,168 @@ def get_labels(tweets):
 
     return tweets, labeled
 
+def build_model(
+    use_text=True,
+    use_article=False,
+    use_quote=False,
+    use_text_metadata=False,
+    use_engagement=False,
+    use_user=False,
+    use_network=False
+):
+    transformers = []
+
+    if use_text:
+        transformers.append(
+            ("text",
+             TfidfVectorizer(max_features=5000),
+                "text")
+        )
+
+    if use_article:
+        transformers.append(
+            ("article",
+             TfidfVectorizer(max_features=3000),
+             "linked_article_values")
+        )
+
+    if use_quote:
+        transformers.append(
+            ("quote",
+             TfidfVectorizer(max_features=2000),
+             "quoted_text")
+        )
+
+    numeric_cols = []
+    bool_cols=[]
+    if use_text_metadata:
+        numeric_cols += text_numeric
+        bool_cols+=text_bool
+    if use_engagement:
+        numeric_cols += ENGAGEMENT
+
+    if use_user:
+        numeric_cols += USER
+        bool_cols += user_bool
+
+    if use_network:
+        numeric_cols += NETWORK
+
+    if numeric_cols:
+        transformers.append(
+            ("numeric",
+             StandardScaler(with_mean=False),
+             numeric_cols))
+    if bool_cols:
+        transformers.append(
+             ("boolean",
+             "passthrough",
+             bool_cols)
+        )
+
+    preprocessor = ColumnTransformer(transformers)
+
+    return Pipeline([
+        ("features", preprocessor),
+        ("clf", LogisticRegression(
+            max_iter=5000,
+            class_weight="balanced"
+        ))
+    ])
+
+
+def print_results(model):
+    #print(classification_report(y_test, predictions))
+
+    results = cross_validate(
+        model,
+        X,
+        y,
+        cv=cv,
+        scoring={
+            "f1": "f1_macro",
+            "precision": "precision_macro",
+            "recall": "recall_macro"
+        }
+    )
+
+    for metric in ["test_f1", "test_precision", "test_recall"]:
+        print(f"{metric}:")
+        print(f"  Scores: {results[metric]}")
+        print(f"  Mean:   {results[metric].mean():.4f}")
+        print(f"  Std:    {results[metric].std():.4f}")
+        print()
+
+
+
+
+
 #save tweets dataset to a dataframe
 all_tweets = pd.read_json("../processed.json") #load tweets to a dataframe
 all_tweets, n_labels =get_labels(all_tweets)
 
 #keep only labeled data for training and testing
 tweets=all_tweets.head(n_labels)
+tweets=tweets.drop(columns=["raw_activity"]) #it was only kept fro reference not for the model
 
 
-###########################################################################################################
-X_text = tweets["text"]
-Y_label = tweets["label"]
-
-#Model 1: Logistic Regression using only TF-IDF of text with n_grams (1,2)
-
-model = Pipeline([
-    ("tfidf", TfidfVectorizer(
-        max_features=5000,
-        min_df=3,
-        ngram_range=(1,2)
-    )),
-    ("clf", LogisticRegression(
-        max_iter=5000,
-        class_weight="balanced"
-    ))
-])
-
-X_train, X_test, y_train, y_test = train_test_split(
-    X_text,
-    Y_label,
-    test_size=0.2,
-    stratify=Y_label,
-    random_state=42
-)
-
-model.fit(X_train, y_train)
-predictions = model.predict(X_test)
-
-print("########################   MODEL 1 #########################\n")
-print(classification_report(y_test, predictions))
-
-cv = StratifiedKFold(
-    n_splits=5,
-    shuffle=True,
-    random_state=42
-)
-
-results = cross_validate(
-    model,
-    X_text,
-    Y_label,
-    cv=cv,
-    scoring={
-        "f1": "f1_macro",
-        "precision": "precision_macro",
-        "recall": "recall_macro"
-    }
-)
-
-for metric in ["test_f1", "test_precision", "test_recall"]:
-    print(f"{metric}:")
-    print(f"  Scores: {results[metric]}")
-    print(f"  Mean:   {results[metric].mean():.4f}")
-    print(f"  Std:    {results[metric].std():.4f}")
-    print()
-
-print("########################   MODEL 2 #########################\n")
-#Model 2: Logistic Regression using only TF-IDF of text and linked_article_values
-
-
-preprocessor = ColumnTransformer(
-    transformers=[
-        ("tweet_text",
-         TfidfVectorizer(max_features=5000),
-         "text"),
-
-        ("article_text",
-         TfidfVectorizer(max_features=3000),
-         "linked_article_values"),
-    ]
-)
-
-model = Pipeline([
-    ("features", preprocessor),
-    ("clf", LogisticRegression(
-        max_iter=5000,
-        class_weight="balanced"
-    ))
-])
-
-X = tweets[["text", "linked_article_values"]]
+X = tweets.drop(columns=["label"])
 y = tweets["label"]
 
-model.fit(X, y)
+#54 different columns
+TEXT_FEATURES = ["text"]
+ARTICLE_FEATURES = ["linked_article_text"]
+#TEXT_METADATA 
+text_numeric=["hashtags","media","urls","user_mentions",
+                 "n_emojis","capital_ratio",
+                 "question_marks","exclamation_marks","n_chars",
+                 "n_words","emoji_vaccine_count","emoji_id_count",
+                 "emoji_ridicule_count","emoji_alert_count",
+                 "emoji_direction_count","emoji_hostility_count",
+                 "emoji_identity_count","emoji_thinking_count",
+                 "emoji_support_count","emoji_smugness_count",
+                 "emoji_negative_count"]
+text_bool=["isReply","isQuote"]
+ENGAGEMENT = ["retweetCount", "replyCount","likeCount",
+              "quoteCount","viewCount","bookmarkCount","engagement_rate"]
+USER = ["followers", "following",
+        "favouritesCount","mediaCount","statusesCount",
+        "professional_info", "account_age_days",
+        "followers_following_ratio","activity","media_ratio"]
+user_bool=["isBlueVerified"]
+NETWORK = ["betweenness","pagerank", "clustering", 
+           "core","indeg","outdeg", 
+           "weighted_indeg","weighted_outdeg"]
+network_bool=["has_selfloop"]
+QUOTE = ["quoted_text"]
 
-X_train, X_test, y_train, y_test = train_test_split(
-    X,
-    y,
-    test_size=0.2,
-    stratify=Y_label,
-    random_state=42
+
+#
+#X_train, X_test, y_train, y_test = train_test_split(
+#    X,
+#    y,
+#    test_size=0.2,
+#    stratify=y,
+#    random_state=42
+#)
+
+cv = StratifiedKFold(
+        n_splits=5,
+        shuffle=True,
+        random_state=42
+    )
+
+
+print("########################   MODEL 1 #########################\n")
+model1 = build_model(
+    use_text=False,
+    use_text_metadata=True
 )
-
-model.fit(X_train, y_train)
-predictions = model.predict(X_test)
-
-print(classification_report(y_test, predictions))
-
+#model1.fit(X_train, y_train)
+#predictions1 = model1.predict(X_test)
+start = time()
 results = cross_validate(
-    model,
+    model1,
     X,
     y,
     cv=cv,
@@ -139,7 +195,8 @@ results = cross_validate(
         "f1": "f1_macro",
         "precision": "precision_macro",
         "recall": "recall_macro"
-    }
+    },
+    n_jobs=-1
 )
 
 for metric in ["test_f1", "test_precision", "test_recall"]:
@@ -148,3 +205,160 @@ for metric in ["test_f1", "test_precision", "test_recall"]:
     print(f"  Mean:   {results[metric].mean():.4f}")
     print(f"  Std:    {results[metric].std():.4f}")
     print()
+
+print(time() - start)
+
+print("########################   MODEL 2 #########################\n")
+model2 = build_model(
+    use_text=True
+)
+#model2.fit(X_train, y_train)
+#predictions2 = model2.predict(X_test)
+start = time()
+results = cross_validate(
+    model2,
+    X,
+    y,
+    cv=cv,
+    scoring={
+        "f1": "f1_macro",
+        "precision": "precision_macro",
+        "recall": "recall_macro"
+    },
+    n_jobs=-1
+)
+
+for metric in ["test_f1", "test_precision", "test_recall"]:
+    print(f"{metric}:")
+    print(f"  Scores: {results[metric]}")
+    print(f"  Mean:   {results[metric].mean():.4f}")
+    print(f"  Std:    {results[metric].std():.4f}")
+    print()
+
+print(time() - start)
+
+print("########################   MODEL 3 #########################\n")
+model3 = build_model(
+    use_text=True,
+    use_text_metadata=True
+)
+#model3.fit(X_train, y_train)
+#predictions3 = model3.predict(X_test)
+start = time()
+results = cross_validate(
+    model3,
+    X,
+    y,
+    cv=cv,
+    scoring={
+        "f1": "f1_macro",
+        "precision": "precision_macro",
+        "recall": "recall_macro"
+    },
+    n_jobs=-1
+)
+
+for metric in ["test_f1", "test_precision", "test_recall"]:
+    print(f"{metric}:")
+    print(f"  Scores: {results[metric]}")
+    print(f"  Mean:   {results[metric].mean():.4f}")
+    print(f"  Std:    {results[metric].std():.4f}")
+    print()
+
+
+print(time() - start)
+
+
+print("########################   MODEL 4 #########################\n")
+model4 = build_model( 
+    use_text=True,
+    use_article=True
+    )
+#model3.fit(X_train, y_train)
+#predictions3 = model3.predict(X_test)
+start = time()
+results = cross_validate(
+    model4,
+    X,
+    y,
+    cv=cv,
+    scoring={
+        "f1": "f1_macro",
+        "precision": "precision_macro",
+        "recall": "recall_macro"
+    },
+    n_jobs=-1
+)
+
+for metric in ["test_f1", "test_precision", "test_recall"]:
+    print(f"{metric}:")
+    print(f"  Scores: {results[metric]}")
+    print(f"  Mean:   {results[metric].mean():.4f}")
+    print(f"  Std:    {results[metric].std():.4f}")
+    print()
+
+
+print(time() - start)
+
+print("########################   MODEL 5 #########################\n")
+model5 = build_model(
+    use_text=True,
+    use_article=True,
+    use_text_metadata=True
+)
+#model3.fit(X_train, y_train)
+#predictions3 = model3.predict(X_test)
+start = time()
+results = cross_validate(
+    model5,
+    X,
+    y,
+    cv=cv,
+    scoring={
+        "f1": "f1_macro",
+        "precision": "precision_macro",
+        "recall": "recall_macro"
+    },
+    n_jobs=-1
+)
+
+for metric in ["test_f1", "test_precision", "test_recall"]:
+    print(f"{metric}:")
+    print(f"  Scores: {results[metric]}")
+    print(f"  Mean:   {results[metric].mean():.4f}")
+    print(f"  Std:    {results[metric].std():.4f}")
+    print()
+
+
+print(time() - start)
+
+print("########################   MODEL 6  #########################\n")
+model6 = build_model(
+    use_text=True,
+    use_engagement=True
+)
+#model3.fit(X_train, y_train)
+#predictions3 = model3.predict(X_test)
+start = time()
+results = cross_validate(
+    model6,
+    X,
+    y,
+    cv=cv,
+    scoring={
+        "f1": "f1_macro",
+        "precision": "precision_macro",
+        "recall": "recall_macro"
+    },
+    n_jobs=-1
+)
+
+for metric in ["test_f1", "test_precision", "test_recall"]:
+    print(f"{metric}:")
+    print(f"  Scores: {results[metric]}")
+    print(f"  Mean:   {results[metric].mean():.4f}")
+    print(f"  Std:    {results[metric].std():.4f}")
+    print()
+
+
+print(time() - start)
