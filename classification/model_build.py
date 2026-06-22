@@ -1,3 +1,4 @@
+import numpy as np
 import pandas as pd 
 from sklearn.compose import ColumnTransformer
 from sklearn.feature_extraction.text import TfidfVectorizer
@@ -41,21 +42,21 @@ def build_model(
     if use_text:
         transformers.append(
             ("text",
-             TfidfVectorizer(max_features=1000),
+             TfidfVectorizer(max_features=5000),
                 "text")
         )
 
     if use_article:
         transformers.append(
             ("article",
-             TfidfVectorizer(max_features=1000),
+             TfidfVectorizer(max_features=3000),
              "linked_article_values")
         )
 
     if use_quote:
         transformers.append(
             ("quote",
-             TfidfVectorizer(max_features=1000),
+             TfidfVectorizer(max_features=2000),
              "quoted_text")
         )
 
@@ -96,9 +97,42 @@ def build_model(
         ))
     ])
 
+def ablation(configs):
+    results = []
+    models = {}
+
+    for cfg in configs:
+        print(f"\nRunning: {cfg['name']}")
+
+        model = build_model(
+            use_text=cfg["use_text"],
+            use_article=cfg["use_article"],
+            use_quote=cfg["use_quote"],
+            use_text_metadata=cfg["use_text_metadata"],
+            use_engagement=cfg["use_engagement"],
+            use_user=cfg["use_user"],
+            use_network=cfg["use_network"],
+        )
+
+        scores = get_results(model)  # ideally return metrics instead of printing
+
+        results.append({
+            "model": cfg["name"],
+            **scores
+        })
+        models[cfg["name"]]=model
+
+    return results,models
 
 def get_results(model):
     #print(classification_report(y_test, predictions))
+
+    cv = StratifiedKFold(
+        n_splits=5,
+        shuffle=True,
+        random_state=42
+    )
+
     start = time()
     results = cross_validate(
         model,
@@ -112,16 +146,14 @@ def get_results(model):
         },
         n_jobs=-1
     )
+    print("5-Fold Cross Validation time : ",time() - start)
 
-    for metric in ["test_f1", "test_precision", "test_recall"]:
-        print(f"{metric}:")
-        print(f"  Scores: {results[metric]}")
-        print(f"  Mean:   {results[metric].mean():.4f}")
-        print(f"  Std:    {results[metric].std():.4f}")
-        print()
-
-
-    print(time() - start)
+    return {
+        "f1_mean": results["test_f1"].mean(),
+        "f1_std": results["test_f1"].std(),
+        "precision_mean": results["test_precision"].mean(),
+        "recall_mean": results["test_recall"].mean(),
+        }
 
 
 
@@ -166,6 +198,21 @@ network_bool=["has_selfloop"]
 QUOTE = ["quoted_text"]
 
 
+ablation_configs = [
+    {"name": "text_only", "use_text": True, "use_article": False, "use_quote": False, "use_text_metadata": False, "use_engagement": False, "use_user": False, "use_network": False},
+    {"name": "text_meta", "use_text": True, "use_article": False, "use_quote": False, "use_text_metadata": True, "use_engagement": False, "use_user": False, "use_network": False},
+    {"name": "text_article", "use_text": True, "use_article": True, "use_quote": False, "use_text_metadata": False, "use_engagement": False, "use_user": False, "use_network": False},
+    {"name": "text_article_quote", "use_text": True, "use_article": True, "use_quote": True, "use_text_metadata": False, "use_engagement": False, "use_user": False, "use_network": False},
+    {"name": "text_all", "use_text": True, "use_article": True, "use_quote": True, "use_text_metadata": True, "use_engagement": False, "use_user": False, "use_network": False},    
+    {"name": "text_user", "use_text": True, "use_article": False, "use_quote": False, "use_text_metadata": False, "use_engagement": False, "use_user": True, "use_network": False},
+    {"name": "text_network", "use_text": True, "use_article": False, "use_quote": False, "use_text_metadata": False, "use_engagement": False, "use_user": False, "use_network": True},
+    {"name": "text_user_network_engagement", "use_text": True, "use_article": False, "use_quote": False, "use_text_metadata": False, "use_engagement": True, "use_user": True, "use_network": True},    
+    {"name": "without_meta", "use_text": True, "use_article": True, "use_quote": True, "use_text_metadata": False, "use_engagement": True, "use_user": True, "use_network": True},
+    {"name": "without_texts", "use_text": False, "use_article": False, "use_quote": False, "use_text_metadata": True, "use_engagement": True, "use_user": True, "use_network": True},
+    {"name": "full", "use_text": True, "use_article": True, "use_quote": True, "use_text_metadata": True, "use_engagement": True, "use_user": True, "use_network": True},
+]
+
+
 #
 #X_train, X_test, y_train, y_test = train_test_split(
 #    X,
@@ -175,111 +222,23 @@ QUOTE = ["quoted_text"]
 #    random_state=42
 #)
 
-cv = StratifiedKFold(
-        n_splits=5,
-        shuffle=True,
-        random_state=42
-    )
+
+results,models = ablation(ablation_configs)
+
+df = pd.DataFrame(results)
+print(df)
 
 
-print("########################   MODEL 1 #########################\n")
-model1 = build_model(
-    use_text=True,
-)
-get_results(model1)
 
-print("########################   MODEL 2 #########################\n")
-model2 = build_model(
-    use_text=True,
-    use_text_metadata=True
-)
-get_results(model2)
+models["full"].fit(X, y)
 
-print("########################   MODEL 3 #########################\n")
-model3 = build_model( 
-    use_text=True,
-    use_article=True
-    )
-get_results(model3)
+clf = models["full"].named_steps["clf"]
+feature_names = models["full"].named_steps["features"].get_feature_names_out()
+importance = np.mean(np.abs(clf.coef_), axis=0)
 
-print("########################   MODEL 4  #########################\n")
-model4 = build_model(
-    use_text=True,
-    use_article=True,
-    use_quote=True
-)
-get_results(model4)
+coef_df = pd.DataFrame({
+    "feature": feature_names,
+    "importance": importance
+}).sort_values("importance", ascending=False)
 
-print("########################   MODEL 5 #########################\n")
-model5 = build_model(
-    use_text=True,
-    use_article=True,
-    use_text_metadata=True
-)
-get_results(model5)
-
-print("########################   MODEL 6  #########################\n")
-model6 = build_model(
-    use_text=True,
-    use_article=True,
-    use_text_metadata=True,
-    use_quote=True
-)
-get_results(model6)
-
-print("########################   MODEL 7  #########################\n")
-model7 = build_model(
-    use_text=True,
-    use_engagement=True
-)
-get_results(model7)
-
-print("########################   MODEL 8  #########################\n")
-model8 = build_model(
-    use_text=True,
-    use_user=True
-)
-get_results(model8)
-
-print("########################   MODEL 9  #########################\n")
-model9 = build_model(
-    use_text=True,
-    use_user=True,
-    use_network=True,
-    use_engagement=True
-)
-get_results(model9)
-
-print("########################   MODEL 10  #########################\n")
-model10 = build_model(
-    use_text=True,
-    use_article=True,
-    use_quote=True,
-    use_user=True,
-    use_network=True,
-    use_engagement=True
-)
-get_results(model10)
-
-print("########################   MODEL 11  #########################\n")
-model11 = build_model(
-    use_text=True,
-    use_article=True,
-    use_quote=True,
-    use_text_metadata=True,
-    use_user=True,
-    use_network=True,
-    use_engagement=True
-)
-get_results(model11)
-
-print("########################   MODEL 12  #########################\n")
-model12 = build_model(
-    use_article=True,
-    use_quote=True,
-    use_text_metadata=True,
-    use_user=True,
-    use_network=True,
-    use_engagement=True
-)
-get_results(model12)
+coef_df.to_csv("feature_importance.csv", index=False)
