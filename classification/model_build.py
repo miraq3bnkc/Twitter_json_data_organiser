@@ -1,15 +1,19 @@
+from matplotlib import pyplot as plt
 import numpy as np
 import pandas as pd 
 from sklearn.compose import ColumnTransformer
+from sklearn.ensemble import RandomForestClassifier
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.feature_selection import SelectKBest, f_classif
-from sklearn.model_selection import StratifiedKFold, cross_validate, train_test_split
+from sklearn.model_selection import StratifiedKFold, cross_val_predict, cross_validate, train_test_split
 from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import classification_report
+from sklearn.metrics import ConfusionMatrixDisplay, classification_report, confusion_matrix
+from sklearn.naive_bayes import MultinomialNB
 from sklearn.pipeline import Pipeline
 from time import time
-
+from collections import Counter
 from sklearn.preprocessing import StandardScaler
+from sklearn.svm import LinearSVC
 
 #Add LABELS
 def get_labels(tweets):
@@ -29,6 +33,7 @@ def get_labels(tweets):
     return tweets, labeled
 
 def build_model(
+    classifier=None,
     use_text=True,
     use_article=False,
     use_quote=False,
@@ -38,6 +43,11 @@ def build_model(
     use_network=False
 ):
     transformers = []
+    if classifier is None:
+        classifier = LogisticRegression(
+            max_iter=5000,
+            class_weight="balanced"
+        )
 
     if use_text:
         transformers.append(
@@ -91,10 +101,7 @@ def build_model(
 
     return Pipeline([
         ("features", preprocessor),
-        ("clf", LogisticRegression(
-            max_iter=5000,
-            class_weight="balanced"
-        ))
+        ("clf", classifier)
     ])
 
 def ablation(configs):
@@ -127,11 +134,6 @@ def ablation(configs):
 def get_results(model):
     #print(classification_report(y_test, predictions))
 
-    cv = StratifiedKFold(
-        n_splits=5,
-        shuffle=True,
-        random_state=42
-    )
 
     start = time()
     results = cross_validate(
@@ -140,6 +142,7 @@ def get_results(model):
         y,
         cv=cv,
         scoring={
+            "accuracy": "accuracy",
             "f1": "f1_macro",
             "precision": "precision_macro",
             "recall": "recall_macro"
@@ -149,6 +152,7 @@ def get_results(model):
     print("5-Fold Cross Validation time : ",time() - start)
 
     return {
+        "accuracy_mean" : results["test_accuracy"].mean(), 
         "f1_mean": results["test_f1"].mean(),
         "f1_std": results["test_f1"].std(),
         "precision_mean": results["test_precision"].mean(),
@@ -213,15 +217,11 @@ ablation_configs = [
 ]
 
 
-#
-#X_train, X_test, y_train, y_test = train_test_split(
-#    X,
-#    y,
-#    test_size=0.2,
-#    stratify=y,
-#    random_state=42
-#)
-
+cv = StratifiedKFold(
+    n_splits=5,
+    shuffle=True,
+    random_state=42
+)
 
 results,models = ablation(ablation_configs)
 
@@ -229,7 +229,7 @@ df = pd.DataFrame(results)
 print(df)
 
 
-
+#Get all the coefficients in the full model
 models["full"].fit(X, y)
 
 clf = models["full"].named_steps["clf"]
@@ -242,3 +242,75 @@ coef_df = pd.DataFrame({
 }).sort_values("importance", ascending=False)
 
 coef_df.to_csv("feature_importance.csv", index=False)
+
+
+#Use the best model for comparisons with other models
+comparisons=[ results[3]]
+
+print("\nRunning: Linear Support Vector Classification")
+linear = build_model(
+    classifier=LinearSVC(
+        class_weight="balanced",
+        max_iter=5000
+    ),
+    use_text=True,
+    use_article=True,
+    use_quote=True
+)
+
+comparisons.append({"model":"linearSVC",**get_results(linear)})
+
+print("\nRunning: Multinomial Naive Bayes")
+Naive_bayes = build_model(
+    classifier=MultinomialNB(),
+    use_text=True,
+    use_article=True,
+    use_quote=True
+)
+
+comparisons.append({"model":"Naive Bayes",**get_results(Naive_bayes)})
+
+y_pred = cross_val_predict(Naive_bayes, X, y, cv=cv)
+print(Counter(y_pred))
+
+print("\nRunning: Random Forest")
+Rforest = build_model(
+    classifier= RandomForestClassifier(),
+    use_text=True,
+    use_article=True,
+    use_quote=True
+)
+comparisons.append({"model":"Random Forest",**get_results(Rforest)})
+
+print("\n\nRESULTS\n\n")
+df = pd.DataFrame(comparisons)
+print(df)
+
+models = df["model"]
+f1 = df["f1_mean"]
+
+plt.figure(figsize=(6,4))
+plt.bar(models, f1, color="steelblue")
+
+plt.title("Model comparison (Macro F1)")
+plt.ylabel("Macro F1")
+plt.ylim(0, 1)
+plt.xticks(rotation=45)
+plt.tight_layout()
+plt.show()
+
+#Now that we have found our best model lets get more info
+y_pred = cross_val_predict(
+    linear,
+    X,
+    y,
+    cv=cv,
+    n_jobs=-1
+)
+
+print("\n\nClassification report\n\n",classification_report(y, y_pred))
+
+disp = ConfusionMatrixDisplay.from_predictions(y, y_pred, cmap="Blues")
+plt.title("LinearSVC Confusion Matrix (CV Predictions)")
+plt.tight_layout()
+plt.show()
