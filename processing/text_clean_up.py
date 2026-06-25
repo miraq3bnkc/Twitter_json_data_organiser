@@ -11,7 +11,7 @@ Basics:
 Rest:
     6. Remove punctuation and other symbols
     7. Correct some typos
-    8. Remove unnecessary information (like eg "subscribe") -> only for linked_article_text
+----8. Remove unnecessary information (like eg "subscribe") -> only for linked_article_text----NOT INCLUDED
 
 """
 import json
