@@ -4,10 +4,9 @@ import pandas as pd
 from sklearn.compose import ColumnTransformer
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.feature_selection import SelectKBest, f_classif
-from sklearn.model_selection import StratifiedKFold, cross_val_predict, cross_validate, train_test_split
+from sklearn.model_selection import StratifiedKFold, cross_val_predict, cross_validate
 from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import ConfusionMatrixDisplay, classification_report, confusion_matrix
+from sklearn.metrics import ConfusionMatrixDisplay, classification_report
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.pipeline import Pipeline
 from time import time
