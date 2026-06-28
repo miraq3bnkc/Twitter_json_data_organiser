@@ -9,6 +9,7 @@
    The changes are curated for the specific analysis. 
 """
 from processing.data_transform import transform_mentions, text_cleanup
+from processing.feature_engineer import account_age
 
 """Profession Data not included after all
 These metadata were defined only on 19.5% of our dataset.
@@ -41,7 +42,7 @@ def extract_author(author):
         "isBlueVerified":author.get("isBlueVerified"),
         "followers": author.get("followers"),
         "following": author.get("following"),
-        "user_createdAt": author.get("createdAt"),
+        "account_age_days": account_age(author.get("createdAt")),
         "favouritesCount": author.get("favouritesCount"),
         "mediaCount": author.get("mediaCount"),
         "statusesCount": author.get("statusesCount"),

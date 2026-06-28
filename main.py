@@ -1,6 +1,6 @@
 from graph_structure.network_graph import add_graph_features, create_DiGraph, plot_graph, get_graph_features
 from processing.openfiles import load_data,save_file,extract_transform,merge_quotes
-from processing.data_transform import replace_username_id, account_age
+from processing.data_transform import replace_username_id
 from processing.feature_engineer import add_features_bn, get_n_chars, add_features
 from processing.text_clean_up import normalize_basics,text_clean_up
 
@@ -30,8 +30,6 @@ features,degrees=get_graph_features(G)
 processed_tweets=[]
 
 for tweet in tweets:
-    tweet=account_age(tweet)
-    
     #Adding graph features
     tweet=add_graph_features(G,tweet,features,degrees)
 

@@ -1,9 +1,12 @@
+from datetime import datetime
 import os
 import json
 from processing.remove_posts import de_duplicate,delete_tweets
 from processing.remove_fields import clean_tweet
-from processing.data_transform import parse_date
 
+#function for accessing the datetime string existing in "createdAt" field
+def parse_date(tweet):
+    return datetime.strptime(tweet["createdAt"], "%a %b %d %H:%M:%S %z %Y")
 
 def load_data(path):
     data=[] #Load all data in the files

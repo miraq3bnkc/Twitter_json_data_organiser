@@ -12,6 +12,7 @@ TEXT FEATURES
     7. n_words: number of words in post's text
     8. emoji_category_count: label of what category of emoji was used and how many times
 USER FEATURES
+    1. account_age_days :  date of last day of scraping - user created at date
     1. followers_following_ratio : followers/following
     2. activity: average number of statuses per day
     3. media_ratio: number of media posts/statuses , are most of the posts just media?
@@ -20,6 +21,7 @@ POPULARITY FEATURES
 
 """
 
+from datetime import date, datetime
 from math import log1p
 import emoji
 import re
@@ -100,9 +102,9 @@ emoji_categories = {
     "hostility": {"🖕", "🤮", "😡", "❌", "🖐️", "🤬", "👿", "😈", "⛔", "🖐", "⭕",  "🚫", "🍒"},
     "identity": {"🇬🇷", "🇬🇧", "☦️", "🇪🇺", "🇫🇷", "✝️", "🇺🇸", "🇵🇸", "🇪🇸", "☦", "🇸🇻", "🇮🇱", "🇮🇹", "🇨🇾", "🇷🇺"},
     "thinking": {"🤔", "🤨", "🧠", "👀", "🤷🏼‍♀️", "🤷‍♀️", "🤷"},
-    "support": {"👏", "🤝", "👍", "👊",  "✌️",  "🙏", "💪", "💯", "👌", "🥂", "💙", "✊", "🤘", "🥇", "🍺", "🙏🏻", "💫", "👍🏼", "👌🏼", "🌺", "🎉" "😇"},
+    "support": {"👏", "🤝", "👍", "👊",  "✌️",  "🙏", "💪", "💯", "👌", "🥂", "💙", "✊", "🤘", "🥇", "🍺", "🙏🏻", "💫", "👍🏼", "👌🏼", "🌺", "🎉", "😇"},
     "smugness": {"😎", "🤠", "😋", "😉"},
-    "negative": {"😱", "🙈", "🫣", "😬", "🙃", "😵‍💫", "😲", "😳", "🤯", "😔", "🥹" "😶" "😶‍🌫️", "🫠", "🥺", "🥴", "🥲", "😢", "😤", "😵", "😣", "😐", "💀", "😰", "🫤", "🫥" "🐉", "🔒"}
+    "negative": {"😱", "🙈", "🫣", "😬", "🙃", "😵‍💫", "😲", "😳", "🤯", "😔", "🥹", "😶", "😶‍🌫️", "🫠", "🥺", "🥴", "🥲", "😢", "😤", "😵", "😣", "😐", "💀", "😰", "🫤", "🫥", "🐉", "🔒"}
 }
 
 #emoji_category_count : integer
@@ -146,6 +148,15 @@ of punctuation marks the instances become pretty sparse.
 
 ###############################################################################
 '''USER FEATURES'''
+
+def account_age(createdAt):
+    creation_date=datetime.strptime(createdAt, "%a %b %d %H:%M:%S %z %Y").date()
+    today = date(2026, 3, 6) #last day of scraping data
+    #account age in days
+    account_age=(today-creation_date).days
+
+    return account_age
+
 
 #followers/following : float ∃[0.00, infinity)
 #the ratio is transformed with log(x+1) in order to avoid outliers 
