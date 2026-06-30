@@ -83,7 +83,6 @@ def build_model(
 
     if use_network:
         numeric_cols += NETWORK
-
     if numeric_cols:
         transformers.append(
             ("numeric",
@@ -313,3 +312,52 @@ disp = ConfusionMatrixDisplay.from_predictions(y, y_pred, cmap="Blues")
 plt.title("LinearSVC Confusion Matrix (CV Predictions)")
 plt.tight_layout()
 plt.show()
+
+
+"""Added deleted hyperparameter experiment for reproducability"""
+
+#Use the best model for comparisons with other models
+hyperparameter_comp=[ results[3]]
+
+saga= build_model(
+    classifier=LogisticRegression(
+        solver="saga",
+        class_weight="balanced",
+        max_iter=5000,
+    ),
+    use_text=True,
+    use_article=True,
+    use_quote=True
+)
+
+hyperparameter_comp.append({"model":"saga",**get_results(saga)})
+
+lbfgs_10 = build_model(
+    classifier=LogisticRegression(
+        class_weight="balanced",
+        C=0.1,
+        max_iter=5000,
+    ),
+    use_text=True,
+    use_article=True,
+    use_quote=True
+)
+
+hyperparameter_comp.append({"model":"lbfgs_10",**get_results(lbfgs_10)})
+
+saga_10 = build_model(
+    classifier=LogisticRegression(
+        class_weight="balanced",
+        solver="saga",
+        C=0.1,
+        max_iter=5000,
+    ),
+    use_text=True,
+    use_article=True,
+    use_quote=True
+)
+hyperparameter_comp.append({"model":"saga_10",**get_results(saga_10)})
+
+print("\n\nRESULTS\n\n")
+df = pd.DataFrame(hyperparameter_comp)
+print(df)
