@@ -316,8 +316,8 @@ plt.show()
 
 """Added deleted hyperparameter experiment for reproducability"""
 
-#Use the best model for comparisons with other models
-hyperparameter_comp=[ results[3]]
+#Use the baseline model for comparisons with other models
+hyperparameter_comp=[ results[0]]
 
 saga= build_model(
     classifier=LogisticRegression(
@@ -358,6 +358,6 @@ saga_10 = build_model(
 )
 hyperparameter_comp.append({"model":"saga_10",**get_results(saga_10)})
 
-print("\n\nRESULTS\n\n")
+print("\n\nRESULTS Hyperparameter\n\n")
 df = pd.DataFrame(hyperparameter_comp)
 print(df)
